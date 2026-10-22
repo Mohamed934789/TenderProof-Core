@@ -1,0 +1,31 @@
+{
+  "folders": [
+    {
+      "name": "Core - student implementation",
+      "path": "."
+    },
+    {
+      "name": "Reference v0.6.0 - do not edit",
+      "path": "../TenderProof-AI"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.venv": true,
+      "**/node_modules": true,
+      "**/__pycache__": true,
+      "**/.pytest_cache": true,
+      "**/.ruff_cache": true,
+      "**/runtime": true,
+      "**/tmp": true,
+      "**/dist": true,
+      "**/coverage": true,
+      "**/htmlcov": true,
+      "**/test-results": true,
+      "**/playwright-report": true,
+      "**/public/assets/pdf-fonts": true,
+      "**/public/assets/pdf-cmaps": true
+    }
+  }
+}
