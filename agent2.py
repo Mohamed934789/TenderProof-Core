@@ -1,9 +1,12 @@
-"""Member 3: evidence exercise. No provider calls or finished rules."""
-from models import DocumentPages, Requirement, Finding
+"""Member 3: BOQ/technical extraction; verification now belongs to agent3."""
+from llm_client import LLMClient
+from models import DocumentPages, Mode, TechnicalOutput
 
-def verify_requirements(
-    requirements: list[Requirement], company_documents: list[DocumentPages],
-    *, reference_date: str, mode: str = "MOCK",
-) -> list[Finding]:
-    """One finding per requirement. Uncertain material requires review."""
-    raise NotImplementedError("Member 3: verification exercise")
+async def extract_technical(
+    tender: DocumentPages, *, client: LLMClient, mode: Mode = "MOCK"
+) -> TechnicalOutput:
+    """Extract BOQ, specs/models and technical deadlines with sources.
+    Distinguish NOT_FOUND from unreadable/uncertain tables. Never invent quantities.
+    Technical requirements can exist without a BOQ.
+    """
+    raise NotImplementedError("Member 3: BOQ/technical extraction and prompt")

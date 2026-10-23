@@ -1,6 +1,12 @@
-"""Member 2: extraction exercise. No mock or real AI implemented."""
-from models import DocumentPages, Requirement
+"""Member 2: eligibility extraction exercise. Write your own prompt."""
+from llm_client import LLMClient
+from models import DocumentPages, EligibilityOutput, Mode
 
-def extract_requirements(tender: DocumentPages, *, mode: str = "MOCK") -> list[Requirement]:
-    """Return sourced eligibility candidates; never invent quotations."""
-    raise NotImplementedError("Member 2: implement after PDF reading")
+async def extract_eligibility(
+    tender: DocumentPages, *, client: LLMClient, mode: Mode = "MOCK"
+) -> EligibilityOutput:
+    """Extract qualification documents/criteria with original tender citations.
+    Cover eligibility-related administrative/financial requirements, not every cost.
+    Client injection is not permission for paid calls. No mock implementation yet.
+    """
+    raise NotImplementedError("Member 2: eligibility extraction and prompt")
