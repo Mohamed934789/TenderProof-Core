@@ -1,14 +1,35 @@
+# Local secrets and configuration
 .env
 .env.*
 !.env.example
 .venv/
-__pycache__/
+**/__pycache__/
 *.py[cod]
-.pytest_cache/
-.ruff_cache/
-node_modules/
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+credentials.*.json
+*-credentials.json
+*service-account*.json
+.secrets/
+secrets/
+api-token*.txt
+*.bak
+# Runtime and private documents
 runtime/
+data/private/
 tmp/
 output/
 *.log
 *.sqlite*
+*.db
+*.db-*
+# Dependencies and tool caches
+node_modules/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/

@@ -19,3 +19,9 @@ python -m unittest discover -s tests -v
 صفر اختبارات لا يساوي نجاح. Expected outcomes تُكتب أولًا.
 Real AI evaluation منفصل: عينة جديدة وGround Truth معلن وحدوده، وبعد موافقة تكلفة جديدة.
 لا نسب دقة من نجاح اختبارات Fake أو نوع TypedDict وحده.
+
+## إعداد جهاز جديد
+راجع خطوات Windows في README الرئيسي؛ البيئة تستخدم Python 3.12+ ولا Dependencies خارجية حاليًا.
+قبل اختبار السلوك شغّل python scripts/check_environment.py داخل .venv.
+في فحص التجهيز بتاريخ 24 أكتوبر 2026، unittest وجد صفر اختبارات وأرجع NO TESTS RAN / exit 1.
+ده متوقع لغياب ملفات test_*.py، ولا يثبت صحة pipeline. لا تضف اختبارات وهمية لإخفاء الرسالة.

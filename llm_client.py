@@ -1,4 +1,8 @@
-"""Provider-neutral interface only. No SDK, keys, prompts or HTTP implementation."""
+"""Provider-neutral interface only. No SDK, keys, prompts or HTTP implementation.
+Each member injects an adapter using the existing client argument. Provider/model
+configuration stays outside agent logic. No environment names or loader are
+implemented here; see README for shared setup and adapter policy.
+"""
 from typing import Protocol, TypedDict
 
 class LLMResponse(TypedDict):

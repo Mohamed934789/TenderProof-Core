@@ -20,7 +20,8 @@ TenderProof_AI_From_Zero_To_Agents.html وPDF، وTenderProof_Team_Onboarding.pd
 ونجاح اختبارات البرامج ليس دقة AI.
 
 ## العودة للأصل
-افتح D:\TenderProof-AI في نافذة مستقلة أو مجلد Reference.
+افتح D:\TenderProof-AI في نافذة مستقلة لو النسخة موجودة عندك.
+الـWorkspace المحمول الجديد يعرض Core فقط؛ المرجع مش شرط لتشغيل بيئة Core عند الزملاء.
 راجع git status وgit log -1؛ لا reset --hard ولا clean.
 من PowerShell في الأصل: .\run.ps1 لتشغيل Mock،
 .\run.ps1 -Mode Status للحالة، .\run.ps1 -Mode Stop للإيقاف الآمن.
