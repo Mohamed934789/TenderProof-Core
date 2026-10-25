@@ -1,5 +1,7 @@
-# Python 3.12+ standard-library scaffold: no third-party packages required yet.
-# Install/check with: python -m pip install -r requirements.txt
-# PDF parser, OCR/tables, LLM adapter/SDK/HTTP transport and .env loader have
-# not been selected or implemented. Add packages only with an actual usage.
-# unittest is included with Python; do not install it or every provider SDK.
+
+# Python 3.12+ project dependencies.
+# Install with: python -m pip install -r requirements.txt
+# pypdf is used for native PDF text extraction.
+# OCR and table reconstruction are not implemented.
+# unittest is included with Python.
+pypdf
