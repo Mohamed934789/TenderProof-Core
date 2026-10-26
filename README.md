@@ -47,6 +47,18 @@ Use `--company-documents-complete` ONLY when all company documents were supplied
 the default stays UNKNOWN. This confirmation never overrides text corruption.
 Review citations against the original PDFs before making eligibility decisions.
 
+For an explicitly fictional test package only, add `--synthetic-test`. The default
+is production evaluation; filenames, test labels and AI mode never enable this
+flag automatically. Agent 3 receives the tender context and its exceptions.
+In this opt-in mode, a fictional label or missing real stamp alone is not a
+contradiction. Positive decisions still require cited facts, dates and scope;
+real accreditation requirements and uncertain evidence remain subject to review.
+This flag does not confirm company-document completeness.
+
+The local regression tests can replay the saved responses in `output/` with the
+original PDFs in `tmp/paid-scenarios/`. They never call OpenAI. These replays
+check Python decisions on recorded outputs, not a new model's behavior.
+
 Optional local fixture `tests/fixtures/ida-335.pdf` is private and ignored by Git.
 When present, the free integration test checks page 6 quantities 104, 2 and 1 and
 retains `NEEDS_REVIEW`; fake responses verify integration, not model accuracy.

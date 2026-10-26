@@ -1,7 +1,9 @@
 """Real PDFs through all agents and validators, using only free fake LLMs."""
 import copy
 import json
+import logging
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from pypdf import PdfWriter
@@ -14,6 +16,56 @@ from validation import validate_report, validate_shape
 from models import Report
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+
+@pytest.fixture(scope="module")
+def saved_scenarios():
+    """Optional private-local replay; keep original paid responses/PDFs untouched."""
+    root = Path(__file__).resolve().parents[1]
+    old, recent = root / "output/ar_scenarios_api_audit.json", root / "output/ar_retest_d89396a_api_audit.json"
+    if not old.is_file() or not recent.is_file():
+        pytest.skip("Saved real API responses are optional local regression inputs.")
+    runs = {r["scenario"]: r for r in json.loads(old.read_text(encoding="utf-8"))["runs"]}
+    runs.update({r["scenario"]: r for r in json.loads(recent.read_text(encoding="utf-8"))["runs"]})
+    return {case: runs[case] for case in ("case_101", "case_202", "case_303")}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case,expected", [
+    ("case_101", {"SATISFIED": 11, "CONTRADICTED": 0, "MISSING_EVIDENCE": 0, "NEEDS_REVIEW": 3}),
+    ("case_202", {"SATISFIED": 2, "CONTRADICTED": 8, "MISSING_EVIDENCE": 0, "NEEDS_REVIEW": 3}),
+    ("case_303", {"SATISFIED": 3, "CONTRADICTED": 0, "MISSING_EVIDENCE": 0, "NEEDS_REVIEW": 10}),
+])
+async def test_saved_real_scenario_regressions_without_api(saved_scenarios, case, expected):
+    run = saved_scenarios[case]
+    clients = [FakeClient(call["payload"]) for call in run["calls"]]
+    assert len(clients) == 3
+    old_level = logging.root.manager.disable
+    logging.disable(logging.WARNING)
+    try:
+        with patch("openai_adapter.OpenAIAdapter.generate", side_effect=AssertionError("Paid API forbidden")):
+            report = await analyze(Path(run["tender"]), [Path(p) for p in run["company_files"]],
+                                   reference_date="2026-10-31", mode="AI", synthetic_test=True,
+                                   eligibility_client=clients[0], technical_client=clients[1],
+                                   verification_client=clients[2])
+    finally:
+        logging.disable(old_level)
+    assert [client.calls for client in clients] == [1, 1, 1]
+    assert {status: sum(f["status"] == status for f in report["findings"]) for status in expected} == expected
+    assert [i["quantity"]["decimal_value"] for i in report["technical"]["boq_items"]] == ["12", "8", "2"]
+    findings = {(f["target_type"], f["target_id"]): f for f in report["findings"]}
+    if case == "case_101":
+        # The original dates, absence of arrears, both completed contracts and
+        # both authorized brands support these outcomes within the simulation.
+        for ident in ("R02", "R03", "R04", "R05", "R09"):
+            assert findings[("ELIGIBILITY", ident)]["status"] == "SATISFIED"
+    if case == "case_303":
+        assert findings[("ELIGIBILITY", "R05")]["status"] == "NEEDS_REVIEW"
+        assert findings[("TECHNICAL", "TECH-001")]["status"] == "NEEDS_REVIEW"
+    report["warnings"].append("INFO: LOCAL REGRESSION using recorded responses; no new OpenAI API request.")
+    output = Path(__file__).resolve().parents[1] / "output" / f"ar_{case}_local_regression.json"
+    output.parent.mkdir(exist_ok=True)
+    output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 class FakeClient:

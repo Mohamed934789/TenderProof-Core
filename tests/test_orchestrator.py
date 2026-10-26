@@ -187,6 +187,8 @@ class TestOrchestrator(unittest.IsolatedAsyncioTestCase):
                 reference_date="2026-10-24",
                 client=None,
                 mode="MOCK",
+                synthetic_test=False,
+                tender_context=ANY,
             )
 
             # Check verification validation.

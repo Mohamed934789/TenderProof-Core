@@ -236,7 +236,7 @@ def numbers_in_text(text):
             for token in re.findall(r"(?<![\w.])[+-]?\d+(?:[.,]\d+)?(?![\w.])", normalized)}
 
 
-def quantity_value(raw, sources):
+def quantity_value(raw, sources, description=""):
     """Read one explicit count from an exact, whole-token source span.
 
     This deliberately recognizes a small count vocabulary, not arbitrary Arabic
@@ -270,11 +270,28 @@ def quantity_value(raw, sources):
     }
     count = r"[+-]?\d+(?:[.,٫]\d+)?|" + "|".join(words)
     units = r"جهاز(?:ًا|ا)?|أجهزة|طابعة|طابعات|وحدة|وحدات"
-    parsed = re.fullmatch(r"(?:و)?(?P<count>" + count + r")"
+    parsed = re.fullmatch(r"(?:و)?(?:صيانة\s+)?(?P<count>" + count + r")"
                           r"(?:\s+(?:" + units + r"))?"
                           r"(?:\s+[A-Za-z][A-Za-z0-9 ./-]*)?", raw.strip())
     if not parsed:
         return None
+    # In a shared prose line, a count must belong to the described product,
+    # not another product listed before/after it. Other table layouts retain
+    # their existing uncertainty checks rather than guessing column links.
+    brands = {b.lower() for b in re.findall(r"Xerox|Canon|Plotter", description, re.I)}
+    if brands:
+        linked = []
+        for quote, match in matches:
+            phrase = raw + quote[match.end():]
+            brand = re.match(r"(?:و)?(?:صيانة\s+)?(?:" + count + r")\s+"
+                             r"(?:(?:" + units + r")\s+)?(?P<brand>Xerox|Canon|Plotter)(?!\w)",
+                             phrase, re.I)
+            if brand:
+                linked.append(brand["brand"].lower())
+        if not linked:
+            return None
+        if any(brand not in brands for brand in linked):
+            raise ValueError("BOQ quantity is not supported for the described product.")
     token = parsed["count"]
     # Do not read 'اثنان' as 2 when it is part of 'اثنان وعشرون', or
     # 'عشر' as 10 in 'اثنا عشر'. Larger unsupported expressions need review.
@@ -348,7 +365,7 @@ def validate_technical(technical, tender):
         quantity = item["quantity"]
         _validate_sources(quantity["sources"], [tender])
         raw = quantity["raw_text"]
-        supported = quantity_value(raw, quantity["sources"])
+        supported = quantity_value(raw, quantity["sources"], item["description"])
         value = quantity["decimal_value"]
         if value is None:
             if not item["needs_review"]:

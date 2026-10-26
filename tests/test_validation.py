@@ -11,7 +11,8 @@ from validation import (
 @pytest.mark.parametrize("raw,expected", [
     ("2", "2"), ("٢", "2"), ("۲", "2"), ("12", "12"), ("١٢", "12"), ("۱۲", "12"),
     ("اثنان", "2"), ("جهازان", "2"), ("جهازي Plotter", "2"),
-    ("١٢ جهاز Xerox", "12"), ("ثمانية أجهزة Canon", "8"), ("اثنا عشر جهاز Xerox", "12"),
+    ("١٢ جهاز Xerox", "12"), ("صيانة ١٢ جهاز Xerox", "12"),
+    ("ثمانية أجهزة Canon", "8"), ("اثنا عشر جهاز Xerox", "12"),
     ("2.5", "2.5"), ("٢٫٥", "2.5"),
 ])
 def test_explicit_quantity_keeps_exact_source(raw, expected):
@@ -46,6 +47,16 @@ def test_quantity_cannot_match_part_of_number_or_word(raw, quote):
 ])
 def test_ambiguous_or_unsupported_quantity_is_not_inferred(raw, quote):
     assert quantity_value(raw, [{"quote": quote}]) is None
+
+
+def test_quantity_cannot_be_taken_from_another_product_in_the_same_line():
+    with pytest.raises(ValueError, match="described product"):
+        quantity_value("١٢", [{"quote": "صيانة ١٢ جهاز Xerox و٨ أجهزة Canon"}], "صيانة أجهزة Canon")
+
+
+def test_price_before_a_product_quantity_is_not_a_linked_quantity():
+    source = {"quote": "السعر ١٢٠ جنيه؛ صيانة ١٢ جهاز Xerox"}
+    assert quantity_value("١٢٠", [source], "صيانة أجهزة Xerox") is None
 
 
 class TestValidation(unittest.TestCase):

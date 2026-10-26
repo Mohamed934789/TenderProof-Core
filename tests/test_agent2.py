@@ -246,6 +246,20 @@ class TestAgent2(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(ValueError, "not supported"):
             await extract_technical(tender, client=FakeLLMClient(payload), mode="AI")
 
+    async def test_invalid_model_span_can_only_recover_the_explicit_product_quantity(self):
+        tender, payload = make_tender(), make_payload()
+        line = "صيانة ١٢ جهاز Xerox و٨ أجهزة Canon وجهازي Plotter"
+        tender["pages"][0]["text"] = line
+        item = payload["boq_items"][0]
+        item["description"] = "صيانة أجهزة Plotter"
+        item["quantity"].update(raw_text="٢", decimal_value="2")
+        result = await extract_technical(tender, client=FakeLLMClient(payload), mode="AI")
+        quantity = result["boq_items"][0]["quantity"]
+        self.assertEqual(quantity["decimal_value"], "2")
+        self.assertIn("جهازي Plotter", quantity["raw_text"])
+        self.assertIn(quantity["raw_text"], line)
+        self.assertEqual(quantity["sources"][0]["quote"], line)
+
     async def test_ambiguous_quantity_requires_review_without_inventing_value(self):
         tender, payload = make_tender(), make_payload()
         tender["pages"][0]["text"] = "الكمية: جهازان أو ثلاثة"

@@ -2,6 +2,7 @@
 """Agent 2: technical and BOQ extraction with exact line citations."""
 
 from decimal import Decimal, InvalidOperation
+import re
 
 from agent2_schema import agent2_output_schema
 from llm_client import LLMClient
@@ -12,7 +13,7 @@ from validation import (
 )
 
 
-PROMPT_VERSION = "agent2-line-references-v4"
+PROMPT_VERSION = "agent2-line-references-v5"
 
 AGENT2_PROMPT = """
 أنت Agent 2 في مشروع TenderProof AI.
@@ -187,7 +188,35 @@ def _resolve_extraction(payload, line_lookup):
         )
 
         _validate_quantity(item)
-        if quantity_value(item["quantity"]["raw_text"], item["quantity"]["sources"]) is None:
+        quantity = item["quantity"]
+        try:
+            supported = quantity_value(quantity["raw_text"], quantity["sources"], item["description"])
+        except ValueError:
+            # Recover an invalid model span ONLY from an explicit product-linked
+            # source phrase with the same value. Never accept a digit substring.
+            products = re.findall(r"Xerox|Canon|Plotter", item["description"], re.I)
+            candidates = []
+            for source in quantity["sources"]:
+                for product in products:
+                    for match in re.finditer(r"\b" + re.escape(product) + r"\b", source["quote"], re.I):
+                        starts = list(re.finditer(r"\S+", source["quote"][:match.start()]))[-4:]
+                        for start in starts:
+                            raw = source["quote"][start.start():match.end()]
+                            try:
+                                value = quantity_value(raw, [source], item["description"])
+                            except ValueError:
+                                continue
+                            if value is not None:
+                                candidates.append((raw, value))
+            values = {value for _, value in candidates}
+            if quantity["decimal_value"] is None or values != {Decimal(quantity["decimal_value"])}:
+                raise
+            quantity["raw_text"], supported = max(candidates, key=lambda candidate: len(candidate[0]))
+        if supported is None:
+            explicit = quantity_value(quantity["raw_text"], quantity["sources"])
+            if (explicit is not None and quantity["decimal_value"] is not None
+                    and Decimal(quantity["decimal_value"]) != explicit):
+                raise ValueError("Normalized BOQ quantity is not supported by raw_text.")
             item["quantity"]["decimal_value"] = None
             _mark_review(item, "Quantity wording is ambiguous or unsupported; no value inferred.")
 

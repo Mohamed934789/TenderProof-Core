@@ -20,6 +20,7 @@ async def analyze(
     verification_client: LLMClient | None = None,
     mode: Mode = "MOCK",
     company_documents_complete: bool = False,
+    synthetic_test: bool = False,
 ) -> Report:
     """Read documents -> A1 + A2 -> validate_extractions -> A3 -> validate -> report.
     A1/A2 may run concurrently; A3 must await BOTH valid outputs.
@@ -81,6 +82,8 @@ async def analyze(
         reference_date=reference_date,
         client=verification_client,
         mode=mode,
+        synthetic_test=synthetic_test,
+        tender_context=tender,
     )
 
     validate_verification(
@@ -149,6 +152,8 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("output/report.json"))
     parser.add_argument("--company-documents-complete", action="store_true",
                         help="Confirm ALL company documents were supplied; does not override unreadable text.")
+    parser.add_argument("--synthetic-test", action="store_true",
+                        help="Explicit fictional-test evaluation; never enable for real production evidence.")
     args = parser.parse_args()
 
     async def run():
@@ -160,7 +165,8 @@ def main():
             return await analyze(args.tender, args.company, reference_date=args.reference_date,
                                  eligibility_client=client, technical_client=client,
                                  verification_client=client, mode=args.mode,
-                                 company_documents_complete=args.company_documents_complete)
+                                 company_documents_complete=args.company_documents_complete,
+                                 synthetic_test=args.synthetic_test)
         finally:
             if client is not None:
                 await client.aclose()

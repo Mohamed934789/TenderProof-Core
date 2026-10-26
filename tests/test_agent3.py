@@ -263,3 +263,104 @@ def test_multi_line_quote_cannot_skip_localized_text_damage():
     docs[0]["pages"][0]["warnings"] = ["TEXT_LINE:2: Unmapped glyph."]
     source = {"document_id": "nile-license", "pdf_page": 1, "quote": "واضح.\nتاريخ"}
     assert source_uncertain([source], docs)
+
+
+def verify_one(quote, requirement, result=None, *, synthetic_test=False):
+    eligibility, technical, docs = inputs(text=quote)
+    eligibility["requirements"][0]["text"] = requirement
+    result = copy.deepcopy(result or result_for(expiry_date=None))
+    result["sources"] = [{"line_id": f"D001-P001-L{i:04d}"} for i, line in
+                         enumerate(quote.splitlines(), 1) if line.strip()]
+    client = FakeClient([result])
+    output = asyncio.run(verify_company(eligibility, technical, docs, reference_date="2026-10-31",
+                                       client=client, mode="AI", synthetic_test=synthetic_test))
+    return output["findings"][0], client
+
+
+@pytest.mark.parametrize("days,expected", [("٩٠", "SATISFIED"), ("٤٥", "CONTRADICTED")])
+def test_offer_duration_is_grounded_in_days_and_the_closing_date(days, expected):
+    quote = f"يسري هذا العرض لمدة {days} يومًا تبدأ من تاريخ الإقفال المحدد في ٣١ أكتوبر ٢٠٢٦."
+    requirement = "يجب أن ينص العرض على سريانه لمدة لا تقل عن 90 يومًا من تاريخ الإقفال."
+    finding, _ = verify_one(quote, requirement)
+    assert finding["status"] == expected
+    assert finding["evidence"][0]["quote"] == quote
+
+
+@pytest.mark.parametrize("quote", [
+    "يسري هذا العرض لمدة ٩٠ يومًا تبدأ من تاريخ الإقفال المحدد في ١ أكتوبر ٢٠٢٦.",
+    "يسري هذا العرض حتى إخطار آخر دون تحديد عدد الأيام.",
+    "يسري هذا العرض لمدة ٩٠ يومًا تبدأ من تاريخ الإقفال المحدد في ٣١ أكتوبر ٢٠٢٦. العرض مشروط.",
+    "يسري هذا العرض لمدة ٩٠ يومًا تبدأ من تاريخ الإقفال المحدد في ٣١ أكتوبر ٢٠٢٦. نسخة أخرى لمدة ٤٥ يومًا.",
+])
+def test_unclear_offer_validity_stays_under_review(quote):
+    assert verify_one(quote, "سريان العرض لمدة لا تقل عن 90 يومًا")[0]["status"] == "NEEDS_REVIEW"
+
+
+@pytest.mark.parametrize("repair,expected", [
+    ("يحدد وفق طبيعة العطل بعد الفحص الفني", "NEEDS_REVIEW"),
+    ("خلال ٤٨ ساعة", "CONTRADICTED"),
+])
+def test_missing_repair_limit_is_distinct_from_an_explicit_breach(repair, expected):
+    quote = f"زمن الاستجابة الفنية: خلال ٤ ساعات.\nزمن إعادة الجهاز إلى الخدمة: {repair}."
+    requirement = "الاستجابة خلال ٤ ساعات وإعادة الجهاز إلى الخدمة خلال ٢٤ ساعة."
+    result = result_for(assessment="CONTRADICTS", expiry_date=None)
+    assert verify_one(quote, requirement, result)[0]["status"] == expected
+
+
+def test_explicit_response_breach_survives_an_unknown_repair_deadline():
+    quote = "زمن الاستجابة الفنية: خلال ٨ ساعات.\nزمن إعادة الجهاز إلى الخدمة: غير محدد."
+    requirement = "الاستجابة خلال ٤ ساعات وإعادة الجهاز إلى الخدمة خلال ٢٤ ساعة."
+    result = result_for(assessment="CONTRADICTS", expiry_date=None)
+    assert verify_one(quote, requirement, result)[0]["status"] == "CONTRADICTED"
+
+
+@pytest.mark.parametrize("synthetic_test,expected", [(False, "CONTRADICTED"), (True, "SATISFIED")])
+def test_fictional_labels_do_not_enable_test_rules_automatically(synthetic_test, expected):
+    quote = ("مستند افتراضي. صاحب البيان: شركة الاختبار. النشاط: صيانة أجهزة المكاتب.\n"
+             "تاريخ الإصدار: ١ يناير ٢٠٢٦. تاريخ انتهاء السريان: ٣١ ديسمبر ٢٠٢٧.")
+    result = result_for(assessment="CONTRADICTS", expiry_date="2027-12-31",
+                        explanation="المحتوى مستوفٍ لكنه مستند افتراضي للاختبار.")
+    finding, client = verify_one(quote, "ترخيص صيانة ساري بتاريخ الإقفال", result, synthetic_test=synthetic_test)
+    assert finding["status"] == expected
+    assert client.input_data["synthetic_test"] is synthetic_test
+
+
+@pytest.mark.parametrize("date_line,expiry", [
+    ("تاريخ الإصدار: ١ يناير ٢٠٢٦. تاريخ انتهاء السريان: ٣٠ سبتمبر ٢٠٢٦.", "2026-09-30"),
+    ("تاريخ الإصدار: ١ يناير ٢٠٢٨. تاريخ انتهاء السريان: ٣١ ديسمبر ٢٠٢٨.", "2028-12-31"),
+])
+def test_synthetic_mode_does_not_waive_invalid_dates(date_line, expiry):
+    quote = "صاحب البيان: شركة الاختبار. النشاط: صيانة أجهزة المكاتب.\n" + date_line
+    result = result_for(assessment="CONTRADICTS", expiry_date=expiry, explanation="بيان افتراضي وتواريخه غير مستوفاة.")
+    finding, _ = verify_one(quote, "ترخيص صيانة ساري", result, synthetic_test=True)
+    assert finding["status"] != "SATISFIED"
+
+
+def test_synthetic_mode_keeps_explicit_tax_arrears_contradicted():
+    quote = ("اسم المنشأة: شركة الاختبار. توجد متأخرات ضريبية واجبة الأداء.\n"
+             "تاريخ إصدار البيان: ١ يناير ٢٠٢٦. تاريخ انتهاء السريان: ٣١ ديسمبر ٢٠٢٦.")
+    result = result_for(assessment="CONTRADICTS", expiry_date="2026-12-31",
+                        explanation="بيان افتراضي يتضمن متأخرات ضريبية.")
+    assert verify_one(quote, "بيان ضريبي ساري دون متأخرات", result, synthetic_test=True)[0]["status"] == "CONTRADICTED"
+
+
+def test_synthetic_mode_cannot_waive_a_real_accreditation_requirement():
+    quote = ("الجهة المصدرة: جهة افتراضية. الشركة المفوضة: شركة الاختبار.\n"
+             "يشمل نطاق التفويض صيانة Xerox وCanon صراحة.\n"
+             "تاريخ بدء السريان: ١ يناير ٢٠٢٦. تاريخ انتهاء السريان: ٣١ ديسمبر ٢٠٢٦.")
+    result = result_for(assessment="CONTRADICTS", expiry_date="2026-12-31",
+                        explanation="تفويض افتراضي وليس اعتمادًا حقيقيًا.")
+    finding, _ = verify_one(quote, "تفويض باعتماد حقيقي من المصنع يشمل Xerox وCanon", result, synthetic_test=True)
+    assert finding["status"] != "SATISFIED"
+
+
+def test_license_evidence_does_not_prove_missing_authorization_is_contradicted():
+    result = result_for(assessment="CONTRADICTS", expiry_date=None)
+    finding, _ = verify_one("هذا بيان ترخيص نشاط وليس اعتماد مصنع.", "تفويض صيانة يشمل Xerox وCanon", result)
+    assert finding["status"] == "NEEDS_REVIEW"
+
+
+def test_arabic_conjunction_does_not_hide_the_end_of_a_date_range():
+    from datetime import date
+    from agent3 import _dates_in_text
+    assert _dates_in_text("بين ١ نوفمبر ٢٠٢٣ و٣١ أكتوبر ٢٠٢٦") == {date(2023, 11, 1), date(2026, 10, 31)}
