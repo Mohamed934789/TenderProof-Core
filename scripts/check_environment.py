@@ -41,7 +41,8 @@ def main() -> int:
         require(len(value["folders"]) == 1 and value["folders"][0]["path"] == ".")
         interpreter = value.get("settings", {}).get("python.defaultInterpreterPath", "")
         require(interpreter.startswith("${workspaceFolder}/"))
-    verify("Workspace uses clone-relative paths", workspace)
+    if (ROOT / "TenderProof-Team.code-workspace").is_file():
+        verify("Workspace uses clone-relative paths", workspace)
     verify("requirements.txt available", lambda: require((ROOT / "requirements.txt").is_file()))
     verify(".env.example available", lambda: require((ROOT / ".env.example").is_file()))
     count = len(list((ROOT / "tests").glob("test_*.py")))

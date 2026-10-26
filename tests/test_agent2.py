@@ -199,5 +199,25 @@ class TestAgent2(unittest.IsolatedAsyncioTestCase):
             )
 
 
+    async def test_normalized_quantity_must_match_quoted_raw_quantity(self):
+        payload = make_payload()
+        payload["boq_items"][0]["quantity"]["decimal_value"] = "999"
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            await extract_technical(make_tender(), client=FakeLLMClient(payload), mode="AI")
+
+    async def test_raw_quantity_must_exist_in_its_source(self):
+        payload = make_payload()
+        payload["boq_items"][0]["quantity"].update(raw_text="999", decimal_value="999")
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            await extract_technical(make_tender(), client=FakeLLMClient(payload), mode="AI")
+
+    async def test_malformed_review_flag_is_rejected_before_uncertainty_handling(self):
+        tender = make_tender()
+        tender["pages"][0]["readability"] = "PARTIAL"
+        payload = make_payload()
+        payload["boq_items"][0]["needs_review"] = "false"
+        with self.assertRaises(ValueError):
+            await extract_technical(tender, client=FakeLLMClient(payload), mode="AI")
+
 if __name__ == "__main__":
     unittest.main()

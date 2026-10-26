@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 from agent2_schema import agent2_output_schema
 from llm_client import LLMClient
 from models import DocumentPages, Mode, TechnicalOutput
+from validation import documents_complete, validate_shape, validate_technical
 
 
 PROMPT_VERSION = "agent2-line-references-v2"
@@ -366,7 +367,7 @@ async def extract_technical(
             f"on pages: {sorted(uncertain_pages)}."
         )
 
-    incomplete = tender["completeness"] != "COMPLETE"
+    incomplete = not documents_complete([tender])
 
     if incomplete:
         warnings.append(
@@ -385,10 +386,17 @@ async def extract_technical(
         output_schema=agent2_output_schema(),
     )
 
-    extraction = _resolve_extraction(
-        response["payload"],
-        line_lookup,
-    )
+    try:
+        extraction = _resolve_extraction(response["payload"], line_lookup)
+    except (KeyError, TypeError, AttributeError) as error:
+        raise ValueError("Malformed Agent 2 payload.") from error
+
+    extraction["provenance"] = {
+        "mode": "AI", "provider": response["provider"], "model": response["model"],
+        "prompt_version": PROMPT_VERSION,
+    }
+    extraction["warnings"] = warnings
+    validate_shape(extraction, TechnicalOutput)
 
     for item in extraction["boq_items"]:
         source_pages = {
@@ -444,13 +452,5 @@ async def extract_technical(
             if reason not in extraction["boq_review_reasons"]:
                 extraction["boq_review_reasons"].append(reason)
 
-    extraction["provenance"] = {
-        "mode": "AI",
-        "provider": response["provider"],
-        "model": response["model"],
-        "prompt_version": PROMPT_VERSION,
-    }
-
-    extraction["warnings"] = warnings
-
+    validate_technical(extraction, tender)
     return extraction

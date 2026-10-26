@@ -14,7 +14,10 @@ class OpenAIAdapter:
             raise ValueError("OPENAI_API_KEY is missing")
 
         self.model = os.getenv("OPENAI_MODEL", "gpt-6-luna")
-        self.client = AsyncOpenAI()
+        self.client = AsyncOpenAI(max_retries=0)
+
+    async def aclose(self):
+        await self.client.close()
 
     async def generate(
         self,

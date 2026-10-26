@@ -91,8 +91,8 @@ class TestOrchestrator(unittest.IsolatedAsyncioTestCase):
         }
 
         technical_output = {
-            "boq_status": "NOT_FOUND",
-            "boq_review_reasons": [],
+            "boq_status": "NEEDS_REVIEW",
+            "boq_review_reasons": ["Tender completeness is unknown."],
             "boq_items": [],
             "technical_requirements": [],
             "provenance": provenance.copy(),
@@ -243,7 +243,7 @@ class TestOrchestrator(unittest.IsolatedAsyncioTestCase):
             self.assertFalse(report["coverage_confirmed"])
             self.assertTrue(report["warnings"])
 
-    async def test_full_mock_pipeline_with_evidence(self):
+    async def test_full_pipeline_preserves_uncertain_evidence(self):
         tender_text = "يشترط تقديم سجل تجاري ساري المفعول."
         company_text = "السجل التجاري للشركة ساري المفعول."
 
@@ -279,8 +279,8 @@ class TestOrchestrator(unittest.IsolatedAsyncioTestCase):
                 "requirement_id": "REQ-001",
                 "text": "تقديم سجل تجاري ساري المفعول",
                 "category": "REGISTRATION",
-                "needs_review": False,
-                "review_reasons": [],
+                "needs_review": True,
+                "review_reasons": ["Tender reading is partial."],
                 "sources": [{
                     "document_id": "tender-001",
                     "pdf_page": 1,
@@ -292,8 +292,8 @@ class TestOrchestrator(unittest.IsolatedAsyncioTestCase):
         }
 
         technical = {
-            "boq_status": "NOT_FOUND",
-            "boq_review_reasons": [],
+            "boq_status": "NEEDS_REVIEW",
+            "boq_review_reasons": ["Tender completeness is unknown."],
             "boq_items": [],
             "technical_requirements": [],
             "provenance": provenance.copy(),
@@ -304,15 +304,15 @@ class TestOrchestrator(unittest.IsolatedAsyncioTestCase):
             "findings": [{
                 "target_type": "ELIGIBILITY",
                 "target_id": "REQ-001",
-                "status": "SATISFIED",
+                "status": "NEEDS_REVIEW",
                 "explanation": "المستند المرفوع يشير إلى سريان السجل.",
                 "evidence": [{
                     "document_id": "company-001",
                     "pdf_page": 1,
                     "quote": company_text,
                 }],
-                "review_required": False,
-                "uncertainty_reasons": [],
+                "review_required": True,
+                "uncertainty_reasons": ["Source reading is partial."],
             }],
             "provenance": provenance.copy(),
             "warnings": [],
@@ -348,7 +348,7 @@ class TestOrchestrator(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(len(report["eligibility"]["requirements"]), 1)
         self.assertEqual(report["findings"][0]["target_id"], "REQ-001")
-        self.assertEqual(report["findings"][0]["status"], "SATISFIED")
+        self.assertEqual(report["findings"][0]["status"], "NEEDS_REVIEW")
         self.assertEqual(
             report["findings"][0]["evidence"][0]["document_id"],
             "company-001",

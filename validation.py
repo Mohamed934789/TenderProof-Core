@@ -1,323 +1,257 @@
-"""Member 5: Python-only validation exercises, not a fourth AI agent.
-All guards are intentionally UNIMPLEMENTED; type hints do not enforce safety.
-Invalid structure/source -> ValueError. Uncertain interpretation -> explicit review
-in a structurally valid result; never silently manufacture evidence.
-"""
+"""Shared Python checks for contracts, exact citations and conservative findings."""
+import re
+from datetime import date
+from decimal import Decimal, InvalidOperation
+from types import UnionType
+from typing import Literal, get_args, get_origin, get_type_hints, is_typeddict
+
 from models import (
     Citation, DocumentPages, EligibilityOutput, Report, TechnicalOutput,
     VerificationOutput,
 )
 
-def validate_document(document: DocumentPages) -> None:
-    """Basic document validation."""
 
-    if not document["pages"]:
-        raise ValueError("Document has no pages.")
-
-    has_text = any(
-        page["text"].strip()
-        for page in document["pages"]
-    )
-
-    if not has_text:
-        raise ValueError("Document has no extractable text.")
-
-    for expected_number, page in enumerate(
-        document["pages"], start=1
-    ):
-        if page["pdf_page"] != expected_number:
-            raise ValueError(
-                f"Invalid page numbering: "
-                f"expected {expected_number}, "
-                f"got {page['pdf_page']}."
-            )
-
-
-def validate_citation(
-        
-    citation: Citation,
-    documents: list[DocumentPages],
-) -> None:
-
-    matched_document = next(
-        (
-            document
-            for document in documents
-            if document["document_id"] == citation["document_id"]
-        ),
-        None,
-    )
-
-    if matched_document is None:
-        raise ValueError(
-            f"Unknown document ID: {citation['document_id']}"
-        )
-
-    page_numbers = [
-        page["pdf_page"]
-        for page in matched_document["pages"]
-    ]
-
-    if citation["pdf_page"] not in page_numbers:
-        raise ValueError(
-            f"Invalid page number: {citation['pdf_page']}"
-        )
-
-    matched_page = next(
-      page
-    for page in matched_document["pages"]
-    if page["pdf_page"] == citation["pdf_page"]  )
-
-    quote = citation["quote"]
-
-    if not isinstance(quote, str) or not quote.strip():
-        raise ValueError("Citation quote is empty or invalid.")
-
-    if quote not in matched_page["text"]:
-        raise ValueError(
-            "Citation quote was not found in the referenced page."
-        )
-
-def validate_extractions(
-    eligibility: EligibilityOutput,
-    technical: TechnicalOutput,
-    tender: DocumentPages,
-) -> None:
-    """Initial validation for Agent 1 and Agent 2 outputs."""
-
-    if not isinstance(eligibility.get("requirements"), list):
-        raise ValueError(
-            "Agent 1 must return a requirements list."
-        )
-
-    if not isinstance(technical.get("technical_requirements"), list):
-        raise ValueError(
-            "Agent 2 must return a technical_requirements list."
-        )
-
-    allowed_boq_statuses = {
-        "FOUND",
-        "NOT_FOUND",
-        "NEEDS_REVIEW",
-    }
-
-    if technical.get("boq_status") not in allowed_boq_statuses:
-        raise ValueError("Invalid BOQ status.")
-
-
-    for requirement in eligibility["requirements"]:
-
-        sources = requirement.get("sources")
-
-        if not isinstance(sources, list) or not sources:
-            raise ValueError(
-                "Eligibility requirement must have sources."
-            )
-
-        for citation in sources:
-            validate_citation(citation, [tender])
-
-
-    for requirement in technical["technical_requirements"]:
-        sources = requirement.get("sources")
-
-        if not isinstance(sources, list) or not sources:
-            raise ValueError(
-                "Technical requirement must have sources."
-            )
-
-        for citation in sources:
-            validate_citation(citation, [tender])
-
-    
-    boq_items = technical.get("boq_items")
-
-    if not isinstance(boq_items, list):
-        raise ValueError("BOQ items must be a list.")
-
-    boq_status = technical["boq_status"]
-
-    if boq_status == "NOT_FOUND" and boq_items:
-        raise ValueError(
-            "BOQ cannot contain items when status is NOT_FOUND."
-        )
-
-    if boq_status == "FOUND" and not boq_items:
-        raise ValueError(
-            "BOQ status is FOUND but no items were returned."
-        )
-
-    for item in boq_items:
-        if not isinstance(item, dict):
-            raise ValueError("BOQ item must be an object.")
-
-        sources = item.get("sources")
-
-        if not isinstance(sources, list) or not sources:
-            raise ValueError("BOQ item must have sources.")
-
-        for citation in sources:
-            validate_citation(citation, [tender])
-
-        quantity = item.get("quantity")
-
-        if not isinstance(quantity, dict):
-            raise ValueError("BOQ item must contain a quantity object.")
-
-        raw_text = quantity.get("raw_text")
-
-        if not isinstance(raw_text, str) or not raw_text.strip():
-            raise ValueError("BOQ quantity must have raw_text.")
-
-        quantity_sources = quantity.get("sources")
-
-        if not isinstance(quantity_sources, list) or not quantity_sources:
-            raise ValueError("BOQ quantity must have sources.")
-
-        for citation in quantity_sources:
-            validate_citation(citation, [tender])
-
-        decimal_value = quantity.get("decimal_value")
-
-        if decimal_value is not None:
-            from decimal import Decimal, InvalidOperation
-
-            if not isinstance(decimal_value, str):
-                raise ValueError("Normalized quantity must be a string.")
-
+def validate_shape(value, contract, path="output"):
+    """Enforce the existing TypedDict contracts, including required null fields."""
+    origin, args = get_origin(contract), get_args(contract)
+    if is_typeddict(contract):
+        fields = get_type_hints(contract)
+        if not isinstance(value, dict) or set(value) != set(fields):
+            raise ValueError(f"{path}: missing or unexpected fields.")
+        for key, field in fields.items():
+            validate_shape(value[key], field, f"{path}.{key}")
+    elif origin is list:
+        if not isinstance(value, list):
+            raise ValueError(f"{path}: expected a list.")
+        for index, item in enumerate(value):
+            validate_shape(item, args[0], f"{path}[{index}]")
+    elif origin is Literal:
+        if not any(type(value) is type(option) and value == option for option in args):
+            raise ValueError(f"{path}: invalid choice.")
+    elif origin is UnionType:
+        for option in args:
             try:
-                number = Decimal(decimal_value)
+                validate_shape(value, option, path)
+                return
+            except ValueError:
+                pass
+        raise ValueError(f"{path}: invalid nullable value.")
+    elif type(value) is not contract:
+        raise ValueError(f"{path}: expected {contract.__name__}.")
+
+
+def documents_complete(documents):
+    """Missing evidence needs a confirmed, fully readable document set."""
+    return bool(documents) and all(
+        doc["completeness"] == "COMPLETE"
+        and doc["completeness_basis"] in {"USER_CONFIRMED", "TEST_FIXTURE"}
+        and doc["pages"] and not doc["warnings"]
+        and all(page["readability"] == "READABLE" and not page["warnings"]
+                and all(table["structure_quality"] == "RECOVERED" and not table["warnings"]
+                        for table in page["tables"])
+                for page in doc["pages"])
+        for doc in documents
+    )
+
+
+def validate_document(document: DocumentPages) -> None:
+    if not document.get("pages"):
+        raise ValueError("Document has no pages.")
+    validate_shape(document, DocumentPages)
+    if not document["document_id"].strip() or not document["filename"].strip():
+        raise ValueError("Document ID and filename must not be empty.")
+    if not any(page["text"].strip() for page in document["pages"]):
+        raise ValueError("Document has no extractable text.")
+    if document["completeness"] == "COMPLETE" and document["completeness_basis"] == "UNKNOWN":
+        raise ValueError("Complete documents require a confirmed completeness basis.")
+    for number, page in enumerate(document["pages"], 1):
+        if page["pdf_page"] != number:
+            raise ValueError(f"Invalid page numbering: expected {number}.")
+        if page["readability"] == "READABLE" and not page["text"].strip():
+            raise ValueError("A readable page must contain text.")
+        for table in page["tables"]:
+            if table["pdf_page"] != number:
+                raise ValueError("Table page does not match its page.")
+            for cell in table["cells"]:
+                for source in cell["sources"]:
+                    validate_citation(source, [document])
+
+
+def validate_citation(citation: Citation, documents: list[DocumentPages]) -> None:
+    validate_shape(citation, Citation, "citation")
+    document = next((doc for doc in documents
+                     if doc["document_id"] == citation["document_id"]), None)
+    if document is None:
+        raise ValueError(f"Unknown document ID: {citation['document_id']}")
+    page = next((p for p in document["pages"] if p["pdf_page"] == citation["pdf_page"]), None)
+    if page is None or citation["pdf_page"] < 1:
+        raise ValueError(f"Invalid page number: {citation['pdf_page']}")
+    if not citation["quote"].strip() or citation["quote"] not in page["text"]:
+        raise ValueError("Citation quote was not found in the referenced page.")
+
+
+def source_uncertain(citations, documents):
+    return any(
+        page["readability"] != "READABLE" or page["warnings"]
+        for citation in citations for doc in documents
+        if doc["document_id"] == citation["document_id"]
+        for page in doc["pages"] if page["pdf_page"] == citation["pdf_page"]
+    )
+
+
+def numbers_in_text(text):
+    """Read numeric tokens, including Arabic digits; exclude model identifiers."""
+    normalized = text.translate(str.maketrans("٠١٢٣٤٥٦٧٨٩٫", "0123456789."))
+    return {Decimal(token.replace(",", "."))
+            for token in re.findall(r"(?<![\w.])[+-]?\d+(?:[.,]\d+)?(?![\w.])", normalized)}
+
+
+def _validate_sources(sources, documents):
+    if not sources:
+        raise ValueError("Extracted requirement or quantity must have sources.")
+    for source in sources:
+        validate_citation(source, documents)
+
+
+def _validate_items(items, id_field, tender):
+    ids = [item[id_field] for item in items]
+    if any(not ident.strip() for ident in ids) or len(ids) != len(set(ids)):
+        raise ValueError(f"Empty or duplicate {id_field}.")
+    for item in items:
+        text = item.get("text", item.get("description", ""))
+        if not text.strip():
+            raise ValueError("Extracted text must not be empty.")
+        _validate_sources(item["sources"], [tender])
+        if item["needs_review"] != bool(item["review_reasons"]):
+            raise ValueError("Review flag and review reasons must agree.")
+        if source_uncertain(item["sources"], [tender]) and not item["needs_review"]:
+            raise ValueError("Uncertain source requires extraction review.")
+
+
+def validate_eligibility(eligibility, tender):
+    validate_shape(eligibility, EligibilityOutput)
+    _validate_items(eligibility["requirements"], "requirement_id", tender)
+
+
+def validate_technical(technical, tender):
+    validate_shape(technical, TechnicalOutput)
+    _validate_items(technical["technical_requirements"], "technical_id", tender)
+    _validate_items(technical["boq_items"], "boq_item_id", tender)
+    items, status = technical["boq_items"], technical["boq_status"]
+    if status == "NOT_FOUND" and items:
+        raise ValueError("BOQ cannot contain items when status is NOT_FOUND.")
+    if status == "FOUND" and not items:
+        raise ValueError("BOQ status is FOUND but no items were returned.")
+    if status == "NEEDS_REVIEW" and not technical["boq_review_reasons"]:
+        raise ValueError("BOQ review requires a reason.")
+    if status != "NEEDS_REVIEW" and (not documents_complete([tender])
+                                    or any(item["needs_review"] for item in items)):
+        raise ValueError("Uncertain tender or BOQ requires review.")
+    for item in items:
+        quantity = item["quantity"]
+        _validate_sources(quantity["sources"], [tender])
+        raw = quantity["raw_text"]
+        if not raw.strip() or not any(raw in src["quote"] for src in quantity["sources"]):
+            raise ValueError("BOQ raw quantity is not supported by its sources.")
+        value = quantity["decimal_value"]
+        if value is None:
+            if not item["needs_review"]:
+                raise ValueError("Unknown quantity requires review.")
+        else:
+            try:
+                number = Decimal(value)
             except InvalidOperation:
-                raise ValueError("Invalid normalized BOQ quantity.")
+                raise ValueError("Invalid normalized BOQ quantity.") from None
+            if not number.is_finite() or number <= 0 or number not in numbers_in_text(raw):
+                raise ValueError("Normalized BOQ quantity is not supported by raw_text.")
+        if source_uncertain(quantity["sources"], [tender]) and not item["needs_review"]:
+            raise ValueError("Uncertain quantity source requires review.")
+        if item["table_id"] is not None:
+            tables = [t for p in tender["pages"] for t in p["tables"]
+                      if t["table_id"] == item["table_id"]]
+            if len(tables) != 1 or not any(src["pdf_page"] == tables[0]["pdf_page"]
+                                        for src in item["sources"]):
+                raise ValueError("Unknown or unrelated BOQ table ID.")
 
-            if not number.is_finite() or number <= 0:
-                raise ValueError("BOQ quantity must be positive and finite.")
+
+def validate_extractions(eligibility, technical, tender):
+    if technical.get("boq_status") == "NOT_FOUND" and technical.get("boq_items"):
+        raise ValueError("BOQ cannot contain items when status is NOT_FOUND.")
+    validate_eligibility(eligibility, tender)
+    validate_technical(technical, tender)
 
 
+def collect_targets(eligibility, technical):
+    return [("ELIGIBILITY", item["requirement_id"], item) for item in eligibility["requirements"]] + [
+        ("TECHNICAL", item["technical_id"], item) for item in technical["technical_requirements"]] + [
+        ("BOQ", item["boq_item_id"], item) for item in technical["boq_items"]]
 
 
-def validate_verification(
-    verification: VerificationOutput,
-    eligibility: EligibilityOutput,
-    technical: TechnicalOutput,
-    company_documents: list[DocumentPages],
-    *,
-    reference_date: str,
-) -> None:
-    """Initial finding coverage validation."""
-
+def validate_verification(verification, eligibility, technical, company_documents, *, reference_date):
+    date.fromisoformat(reference_date)
     findings = verification.get("findings")
-
     if not isinstance(findings, list):
         raise ValueError("Findings must be a list.")
-
-    expected_targets = {
-        ("ELIGIBILITY", req["requirement_id"])
-        for req in eligibility["requirements"]
-    }
-
-    expected_targets.update(
-        ("TECHNICAL", req["technical_id"])
-        for req in technical["technical_requirements"]
-    )
-
-    expected_targets.update(
-        ("BOQ", item["boq_item_id"])
-        for item in technical["boq_items"]
-    )
-
-    actual_targets = [
-        (finding["target_type"], finding["target_id"])
-        for finding in findings
-    ]
-
-    if len(actual_targets) != len(set(actual_targets)):
+    targets = {(kind, ident): item for kind, ident, item in collect_targets(eligibility, technical)}
+    actual = [(f.get("target_type"), f.get("target_id")) for f in findings]
+    if len(actual) != len(set(actual)):
         raise ValueError("Duplicate findings detected.")
-
-    if set(actual_targets) != expected_targets:
-        raise ValueError(
-            "Findings do not match extracted requirements."
-        )
-
-    allowed_statuses = {
-        "SATISFIED",
-        "CONTRADICTED",
-        "MISSING_EVIDENCE",
-        "NEEDS_REVIEW",
-    }
-
+    if set(actual) != set(targets):
+        raise ValueError("Findings do not match extracted requirements.")
     for finding in findings:
-        if finding["status"] not in allowed_statuses:
-            raise ValueError(
-                f"Invalid finding status: {finding['status']}"
-            )
-
+        if finding.get("status") == "MISSING_EVIDENCE" and not documents_complete(company_documents):
+            raise ValueError("MISSING_EVIDENCE requires confirmed document completeness and readable pages.")
+    validate_shape(verification, VerificationOutput)
     for finding in findings:
-        status = finding["status"]
-        evidence = finding.get("evidence")
-
-        if not isinstance(evidence, list):
-            raise ValueError("Finding evidence must be a list.")
-
+        status, evidence = finding["status"], finding["evidence"]
+        if not finding["explanation"].strip():
+            raise ValueError("Finding explanation must not be empty.")
+        for source in evidence:
+            validate_citation(source, company_documents)
         if status in {"SATISFIED", "CONTRADICTED"}:
             if not evidence:
-                raise ValueError(
-                    f"{status} finding requires evidence."
-                )
+                raise ValueError(f"{status} finding requires evidence.")
+            item = targets[(finding["target_type"], finding["target_id"])]
+            if item["needs_review"] or source_uncertain(evidence, company_documents):
+                raise ValueError("Uncertain target or company evidence requires review.")
+        if status == "MISSING_EVIDENCE" and evidence:
+            raise ValueError("Missing evidence finding cannot contain evidence.")
+        if finding["review_required"] != (status == "NEEDS_REVIEW"):
+            raise ValueError("Finding review flag does not match status.")
+        if bool(finding["uncertainty_reasons"]) != finding["review_required"]:
+            raise ValueError("Finding review requires explicit uncertainty reasons.")
 
-        for citation in evidence:
-            validate_citation(citation, company_documents)
 
-    for finding in findings:
-        if finding["status"] == "MISSING_EVIDENCE":
-
-            completeness_confirmed = (
-                bool(company_documents)
-                and all(
-                    doc.get("completeness") == "COMPLETE"
-                    and doc.get("completeness_basis")
-                    in {"USER_CONFIRMED", "TEST_FIXTURE"}
-                    for doc in company_documents
-                )
-            )
-
-            if not completeness_confirmed:
-                raise ValueError(
-                    "MISSING_EVIDENCE requires confirmed document completeness."
-                )
-
-def validate_report(
-    report: Report,
-    documents: list[DocumentPages],
-) -> None:
-    """Basic final report validation."""
-
-    if report.get("schema_version") != "core-draft-0.2":
-        raise ValueError("Invalid report schema version.")
-
-    mode = report.get("mode")
-
-    if mode not in {"MOCK", "AI"}:
-        raise ValueError("Invalid report mode.")
-
-    for output in (
-        report["eligibility"],
-        report["technical"],
+def validate_report(report: Report, documents: list[DocumentPages]) -> None:
+    validate_shape(report, Report)
+    date.fromisoformat(report["reference_date"])
+    for document in documents:
+        validate_document(document)
+    for document in documents:
+        validate_document(document)
+    if len({doc["document_id"] for doc in documents}) != len(documents):
+        raise ValueError("Duplicate document IDs.")
+    if len([doc for doc in documents if doc["role"] == "TENDER"]) != 1:
+        raise ValueError("Report requires exactly one tender.")
+    manifest_keys = ("document_id", "filename", "role", "completeness", "completeness_basis", "warnings")
+    manifests = [{key: doc[key] for key in manifest_keys} for doc in documents]
+    if report["documents"] != manifests:
+        raise ValueError("Report manifests do not match source documents.")
+    tender = next(doc for doc in documents if doc["role"] == "TENDER")
+    companies = [doc for doc in documents if doc["role"] == "COMPANY"]
+    for output in (report["eligibility"], report["technical"], {"provenance": report["verification_provenance"]}):
+        provenance = output["provenance"]
+        if provenance["mode"] != report["mode"]:
+            raise ValueError("Provenance mode mismatch.")
+        if any(not provenance[key].strip() for key in ("provider", "model", "prompt_version")):
+            raise ValueError("Incomplete provenance.")
+    validate_extractions(report["eligibility"], report["technical"], tender)
+    validate_verification({"findings": report["findings"], "provenance": report["verification_provenance"],
+                           "warnings": []}, report["eligibility"], report["technical"], companies,
+                          reference_date=report["reference_date"])
+    if report["coverage_confirmed"] and (
+        report["mode"] != "AI" or not companies or not documents_complete(documents)
+        or report["technical"]["boq_status"] == "NEEDS_REVIEW" or report["warnings"]
+        or any(f["review_required"] for f in report["findings"])
     ):
-        provenance = output.get("provenance")
-
-        if not isinstance(provenance, dict):
-            raise ValueError("Missing extraction provenance.")
-
-        if provenance.get("mode") != mode:
-            raise ValueError("Extraction mode mismatch.")
-
-    verification_provenance = report.get(
-        "verification_provenance"
-    )
-
-    if not isinstance(verification_provenance, dict):
-        raise ValueError("Missing verification provenance.")
-
-    if verification_provenance.get("mode") != mode:
-        raise ValueError("Verification mode mismatch.")
+        raise ValueError("Report coverage cannot be confirmed with uncertainty.")

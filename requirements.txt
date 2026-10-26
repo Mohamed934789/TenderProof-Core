@@ -5,3 +5,9 @@
 # OCR and table reconstruction are not implemented.
 # unittest is included with Python.
 pypdf
+openai
+python-dotenv
+# Existing tests use pytest, async fixtures and image-only PDF fixtures.
+pytest
+pytest-asyncio
+Pillow
