@@ -1,4 +1,4 @@
-﻿"""Regression checks for the evidence agent; every AI client here is a local fake."""
+"""Regression checks for the evidence agent; every AI client here is a local fake."""
 import asyncio
 import copy
 
@@ -11,7 +11,7 @@ PAGE_TEXT = "ترخيص صيانة. ينتهي الترخيص في 15 أكتوب
 
 def result_for(kind="ELIGIBILITY", ident="REQ-002", **changes):
     result = {"target_type": kind, "target_id": ident, "evidence_found": True,
-              "document_id": "nile-license", "pdf_page": 1, "quote": PAGE_TEXT,
+              "sources": [{"line_id": "D001-P001-L0001"}],
               "assessment": "SUPPORTS", "explanation": "الدليل يدعم المتطلب.",
               "expiry_date": "2026-10-15", "offered_quantity": None, "offered_unit": None}
     result.update(changes)
@@ -19,8 +19,7 @@ def result_for(kind="ELIGIBILITY", ident="REQ-002", **changes):
 
 
 def no_evidence():
-    return result_for(evidence_found=False, document_id=None, pdf_page=None, quote=None,
-                      assessment="UNCERTAIN", expiry_date=None)
+    return result_for(evidence_found=False, sources=[], assessment="UNCERTAIN", expiry_date=None)
 
 
 class FakeClient:
@@ -29,6 +28,7 @@ class FakeClient:
 
     async def generate(self, **kwargs):
         self.calls += 1
+        self.input_data = kwargs["input_data"]
         return {"payload": {"results": copy.deepcopy(self.results)}, "provider": "fake",
                 "model": "fake-1", "usage": None}
 
@@ -64,7 +64,7 @@ def test_expired_license_is_contradicted():
 
 def test_valid_license_is_satisfied():
     text = "ينتهي الترخيص في 1 يناير 2027"
-    finding, _ = run([result_for(quote=text, expiry_date="2027-01-01")], text=text)
+    finding, _ = run([result_for(expiry_date="2027-01-01")], text=text)
     assert finding["status"] == "SATISFIED"
 
 
@@ -73,10 +73,9 @@ def test_ungrounded_expiry_date_needs_review():
     assert finding["status"] == "NEEDS_REVIEW"
 
 
-def test_fabricated_quote_needs_review():
-    finding, _ = run([result_for(quote="جملة مش موجودة في الصفحة")])
-    assert finding["status"] == "NEEDS_REVIEW"
-    assert finding["evidence"] == []
+def test_model_supplied_quote_is_rejected():
+    with pytest.raises(ValueError):
+        run([result_for(quote="جملة مش موجودة في الصفحة")])
 
 
 def test_no_evidence_in_complete_docs_is_missing():
@@ -121,7 +120,7 @@ def run_boq(offered_quantity, offered_unit="طابعة", quote=None, target_revi
         "needs_review": target_review, "review_reasons": ["table uncertainty"] if target_review else [],
         "sources": [],
     }]
-    result = result_for("BOQ", "BOQ-1", quote=quote, expiry_date=None,
+    result = result_for("BOQ", "BOQ-1", expiry_date=None,
                         offered_quantity=offered_quantity, offered_unit=offered_unit)
     output = asyncio.run(verify_company(eligibility, technical, docs, reference_date="2026-11-01",
                                        client=FakeClient([result]), mode="AI"))
@@ -171,4 +170,43 @@ def test_partial_evidence_page_cannot_prove_compliance():
 
 def test_arabic_indic_expiry_is_compared_in_python():
     quote = "ينتهي الترخيص في ١٥ أكتوبر ٢٠٢٦"
-    assert run([result_for(quote=quote)], text=quote)[0]["status"] == "CONTRADICTED"
+    assert run([result_for()], text=quote)[0]["status"] == "CONTRADICTED"
+
+
+@pytest.mark.parametrize("sources", [[], [{"line_id": "D001-P001-L9999"}],
+                                    [{"line_id": "D001-P001-L0001"}, {"line_id": "D001-P002-L0001"}]])
+def test_invalid_evidence_line_references_are_rejected(sources):
+    with pytest.raises(ValueError):
+        run([result_for(sources=sources)])
+
+
+def test_company_line_ids_do_not_collide_across_documents():
+    eligibility, technical, docs = inputs()
+    second = copy.deepcopy(docs[0])
+    second["document_id"] = "second-license"
+    second["pages"][0]["text"] = "  ينتهي الترخيص في 1 يناير 2027  "
+    docs.append(second)
+    client = FakeClient([result_for(sources=[{"line_id": "D002-P001-L0001"}], expiry_date="2027-01-01")])
+    output = asyncio.run(verify_company(eligibility, technical, docs, reference_date="2026-11-01",
+                                       client=client, mode="AI"))
+    assert output["findings"][0]["status"] == "SATISFIED"
+    assert output["findings"][0]["evidence"] == [{"document_id": "second-license", "pdf_page": 1,
+                                                 "quote": "  ينتهي الترخيص في 1 يناير 2027  "}]
+    assert client.input_data["documents"][0]["pages"][0]["lines"][0]["line_id"] == "D001-P001-L0001"
+    assert client.input_data["documents"][1]["pages"][0]["lines"][0]["line_id"] == "D002-P001-L0001"
+
+
+def test_all_evidence_lines_keep_their_original_pages_and_whitespace():
+    eligibility, technical, docs = inputs(text="  ترخيص صيانة.  ")
+    second_page = copy.deepcopy(docs[0]["pages"][0])
+    second_page.update(pdf_page=2, text="\n ينتهي الترخيص في 15 أكتوبر 2026\t")
+    docs[0]["pages"].append(second_page)
+    client = FakeClient([result_for(sources=[{"line_id": "D001-P001-L0001"},
+                                            {"line_id": "D001-P002-L0002"}])])
+    output = asyncio.run(verify_company(eligibility, technical, docs, reference_date="2026-11-01",
+                                       client=client, mode="AI"))
+    assert output["findings"][0]["status"] == "CONTRADICTED"
+    assert output["findings"][0]["evidence"] == [
+        {"document_id": "nile-license", "pdf_page": 1, "quote": "  ترخيص صيانة.  "},
+        {"document_id": "nile-license", "pdf_page": 2, "quote": " ينتهي الترخيص في 15 أكتوبر 2026\t"},
+    ]

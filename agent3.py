@@ -1,26 +1,30 @@
-﻿"""Agent 3: company evidence, with Python checks for dates and quantities."""
+"""Agent 3: company evidence, with Python checks for dates and quantities."""
 import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
 from typing import Literal, TypedDict
 
+from agent2_schema import line_reference_schema
 from llm_client import LLMClient
 from models import DocumentPages, EligibilityOutput, Mode, TechnicalOutput, VerificationOutput
 from validation import (
-    collect_targets, documents_complete, numbers_in_text, source_uncertain,
-    validate_citation, validate_shape, validate_verification,
+    build_line_index, resolve_sources, collect_targets, documents_complete,
+    numbers_in_text, source_uncertain, validate_shape, validate_verification,
 )
 
-PROMPT_VERSION = "agent3-evidence-v3"
+PROMPT_VERSION = "agent3-line-references-v4"
 INSTRUCTIONS = """
 Compare every target against ONLY the supplied COMPANY documents. Return exactly
 one result per (target_type, target_id). A mention of a topic is not proof of
 compliance: assess whether the quote supports, contradicts or leaves uncertain
 ALL parts of the requirement. Match the correct company, equipment and scope.
-Copy an exact quote and its physical PDF page and document_id. Do not normalize
-whitespace. If no relevant evidence exists use evidence_found=false, null citation
-fields, assessment=UNCERTAIN. Never invent missing evidence, dates or quantities.
-For evidence with an explicit expiry date, include that date in the quote and
+Company pages contain lines with unique line_id values such as D001-P001-L0001.
+Return sources as objects containing only line_id, using ONLY supplied line IDs.
+Cite all supporting lines, including dates or quantities on separate lines.
+Do not write quotes, page numbers or document IDs: Python restores original citations.
+If no relevant evidence exists use evidence_found=false, sources=[], assessment=UNCERTAIN.
+Never invent missing evidence, dates or quantities.
+For evidence with an explicit expiry date, cite the line stating that date and
 return expiry_date as YYYY-MM-DD (Gregorian). Do not confuse issue and expiry dates.
 For BOQ, cite the explicitly offered quantity and unit, not past project counts,
 prices, insurance amounts or numbers inside a model code. Use null if unclear.
@@ -33,9 +37,7 @@ class EvidenceResult(TypedDict):
     target_type: Literal["ELIGIBILITY", "TECHNICAL", "BOQ"]
     target_id: str
     evidence_found: bool
-    document_id: str | None
-    pdf_page: int | None
-    quote: str | None
+    sources: list[dict]
     assessment: Literal["SUPPORTS", "CONTRADICTS", "UNCERTAIN"]
     explanation: str
     expiry_date: str | None
@@ -47,8 +49,7 @@ def verification_output_schema():
     properties = {
         "target_type": {"type": "string", "enum": ["ELIGIBILITY", "TECHNICAL", "BOQ"]},
         "target_id": {"type": "string"}, "evidence_found": {"type": "boolean"},
-        "document_id": {"type": ["string", "null"]}, "pdf_page": {"type": ["integer", "null"]},
-        "quote": {"type": ["string", "null"]},
+        "sources": {"type": "array", "items": line_reference_schema()},
         "assessment": {"type": "string", "enum": ["SUPPORTS", "CONTRADICTS", "UNCERTAIN"]},
         "explanation": {"type": "string"}, "expiry_date": {"type": ["string", "null"]},
         "offered_quantity": {"type": ["string", "null"]},
@@ -89,24 +90,20 @@ def _dates_in_text(text):
     return dates
 
 
-def _decide(kind, ident, item, result, documents, reference):
+def _decide(kind, ident, item, result, documents, reference, line_lookup):
     def review(message, evidence=None):
         return _finding(kind, ident, "NEEDS_REVIEW", message, evidence)
 
     if not result["evidence_found"]:
-        if any(result[key] is not None for key in
-               ("document_id", "pdf_page", "quote", "expiry_date", "offered_quantity", "offered_unit")):
+        if result["sources"] or any(result[key] is not None for key in
+               ("expiry_date", "offered_quantity", "offered_unit")):
             raise ValueError("No-evidence result contains evidence fields.")
         if result["assessment"] != "UNCERTAIN":
             raise ValueError("No-evidence result must have an uncertain assessment.")
         status = "MISSING_EVIDENCE" if documents_complete(documents) and not item["needs_review"] else "NEEDS_REVIEW"
         return _finding(kind, ident, status, "No supporting evidence found in company documents.")
-    citation = {key: result[key] for key in ("document_id", "pdf_page", "quote")}
-    try:
-        validate_citation(citation, documents)
-    except ValueError:
-        return review("Quoted evidence could not be verified on the cited company page.")
-    evidence, quote = [citation], citation["quote"]
+    evidence = resolve_sources(result["sources"], line_lookup)
+    quote = "\n".join(citation["quote"] for citation in evidence)
     if item["needs_review"]:
         return review("The extracted target requires review before evidence can be decided.", evidence)
     if source_uncertain(evidence, documents):
@@ -173,11 +170,16 @@ async def verify_company(
     else:
         if client is None:
             raise ValueError("AI mode requires an LLMClient.")
+        indexed_documents, line_lookup = [], {}
+        for number, document in enumerate(company_documents, 1):
+            pages, lookup = build_line_index(document, prefix=f"D{number:03d}-")
+            indexed_documents.append({**document, "pages": pages})
+            line_lookup.update(lookup)
         response = await client.generate(
             instructions=INSTRUCTIONS,
             input_data={"reference_date": reference_date,
                         "targets": [{"target_type": kind, "target_id": ident, "requirement": item}
-                                    for kind, ident, item in targets], "documents": company_documents},
+                                    for kind, ident, item in targets], "documents": indexed_documents},
             output_schema=verification_output_schema())
         payload = response["payload"]
         if not isinstance(payload, dict) or set(payload) != {"results"}:
@@ -193,7 +195,7 @@ async def verify_company(
             results[key] = result
         if set(results) != {(kind, ident) for kind, ident, _ in targets}:
             raise ValueError("Agent 3 results do not match extracted targets.")
-        findings = [_decide(kind, ident, item, results[(kind, ident)], company_documents, reference)
+        findings = [_decide(kind, ident, item, results[(kind, ident)], company_documents, reference, line_lookup)
                     for kind, ident, item in targets]
         provenance.update(provider=response["provider"], model=response["model"])
     output = {"findings": findings, "provenance": provenance, "warnings": warnings}

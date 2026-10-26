@@ -6,7 +6,9 @@ from decimal import Decimal, InvalidOperation
 from agent2_schema import agent2_output_schema
 from llm_client import LLMClient
 from models import DocumentPages, Mode, TechnicalOutput
-from validation import documents_complete, validate_shape, validate_technical
+from validation import (
+    build_line_index, resolve_sources, documents_complete, validate_shape, validate_technical,
+)
 
 
 PROMPT_VERSION = "agent2-line-references-v2"
@@ -94,94 +96,6 @@ def _mock_output() -> TechnicalOutput:
     }
 
 
-def _build_line_index(tender: DocumentPages):
-    """Return model input lines and exact source lookup."""
-
-    indexed_pages = []
-    line_lookup = {}
-
-    for page in tender["pages"]:
-        page_number = page["pdf_page"]
-        indexed_lines = []
-
-        for number, raw_line in enumerate(
-            page["text"].splitlines(),
-            start=1,
-        ):
-            if not raw_line.strip():
-                continue
-
-            line_id = f"P{page_number:03d}-L{number:04d}"
-
-            if line_id in line_lookup:
-                raise ValueError(
-                    f"Duplicate line reference: {line_id}"
-                )
-
-            citation = {
-                "document_id": tender["document_id"],
-                "pdf_page": page_number,
-                "quote": raw_line,
-            }
-
-            line_lookup[line_id] = citation
-
-            indexed_lines.append({
-                "line_id": line_id,
-                "text": raw_line,
-            })
-
-        indexed_pages.append({
-            "pdf_page": page_number,
-            "readability": page["readability"],
-            "warnings": page["warnings"],
-            "tables": page["tables"],
-            "lines": indexed_lines,
-        })
-
-    return indexed_pages, line_lookup
-
-
-def _resolve_sources(
-    references,
-    line_lookup,
-):
-    """Convert model-selected line IDs into exact Citations."""
-
-    if not isinstance(references, list) or not references:
-        raise ValueError("Missing source line references.")
-
-    citations = []
-    seen = set()
-
-    for reference in references:
-        if not isinstance(reference, dict):
-            raise ValueError("Invalid line reference object.")
-
-        if set(reference) != {"line_id"}:
-            raise ValueError("Unexpected line reference fields.")
-
-        line_id = reference["line_id"]
-
-        if not isinstance(line_id, str):
-            raise ValueError("Line ID must be a string.")
-
-        if line_id not in line_lookup:
-            raise ValueError(
-                f"Unknown source line: {line_id}"
-            )
-
-        if line_id in seen:
-            continue
-
-        seen.add(line_id)
-
-        # Never ask the LLM to recreate the quote.
-        citations.append(dict(line_lookup[line_id]))
-
-    return citations
-
-
 def _validate_quantity(item):
     quantity = item["quantity"]
     value = quantity["decimal_value"]
@@ -255,12 +169,12 @@ def _resolve_extraction(payload, line_lookup):
 
         item_ids.add(item_id)
 
-        item["sources"] = _resolve_sources(
+        item["sources"] = resolve_sources(
             item["sources"],
             line_lookup,
         )
 
-        item["quantity"]["sources"] = _resolve_sources(
+        item["quantity"]["sources"] = resolve_sources(
             item["quantity"]["sources"],
             line_lookup,
         )
@@ -288,7 +202,7 @@ def _resolve_extraction(payload, line_lookup):
 
         technical_ids.add(requirement_id)
 
-        requirement["sources"] = _resolve_sources(
+        requirement["sources"] = resolve_sources(
             requirement["sources"],
             line_lookup,
         )
@@ -341,7 +255,7 @@ async def extract_technical(
     if len(page_numbers) != len(set(page_numbers)):
         raise ValueError("Duplicate PDF page numbers.")
 
-    indexed_pages, line_lookup = _build_line_index(tender)
+    indexed_pages, line_lookup = build_line_index(tender)
 
     if not line_lookup:
         raise ValueError("No extractable text in tender.")

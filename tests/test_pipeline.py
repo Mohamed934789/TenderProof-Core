@@ -1,4 +1,4 @@
-﻿"""Real PDFs through all agents and validators, using only free fake LLMs."""
+"""Real PDFs through all agents and validators, using only free fake LLMs."""
 import copy
 import json
 from pathlib import Path
@@ -58,7 +58,7 @@ def technical_payload(tender, page_number, descriptions_and_quantities):
 
 def no_evidence_result(kind, ident):
     return {"target_type": kind, "target_id": ident, "evidence_found": False,
-            "document_id": None, "pdf_page": None, "quote": None, "assessment": "UNCERTAIN",
+            "sources": [], "assessment": "UNCERTAIN",
             "explanation": "المستندات لا تثبت استيفاء المتطلب.", "expiry_date": None,
             "offered_quantity": None, "offered_unit": None}
 
@@ -85,12 +85,12 @@ async def test_fake_ai_full_pipeline_on_generated_pdf(tmp_path):
     eligibility = {"requirements": [{
         "requirement_id": "REQ-1", "text": "Commercial registration required.",
         "category": "REGISTRATION", "needs_review": False, "review_reasons": [],
-        "sources": [{"document_id": "tender-001", "pdf_page": 1, "quote": "Commercial registration required."}],
+        "sources": [{"line_id": "P001-L0001"}],
     }], "warnings": []}
     technical = technical_payload(tender, 1, [("B7030", "104")])
     results = [no_evidence_result("ELIGIBILITY", "REQ-1"), no_evidence_result("BOQ", "BOQ-1")]
-    for result, quote in zip(results, ["Commercial registration certificate.", "We offer 104 printer Xerox B7030."]):
-        result.update(evidence_found=True, document_id="company-001", pdf_page=1, quote=quote,
+    for line_number, result in enumerate(results, 1):
+        result.update(evidence_found=True, sources=[{"line_id": f"D001-P001-L{line_number:04d}"}],
                       assessment="SUPPORTS", explanation="مدعوم بالمستند المرفق.")
     clients = [FakeClient(eligibility), FakeClient(technical), FakeClient({"results": results})]
     report = await analyze(tender_path, [company_path], reference_date="2026-10-26", mode="AI",
@@ -118,11 +118,12 @@ async def test_fake_ai_local_tender_end_to_end(tmp_path):
     company_paths = [FIXTURES / "01_company_profile.pdf", FIXTURES / "04_previous_work.pdf"]
     tender = read_pdf(tender_path, document_id="tender-001", role="TENDER")
     page4 = tender["pages"][3]
-    quote = next(line for line in page4["text"].splitlines() if "السجل التجاري" in line)
+    registration_line = next(i for i, line in enumerate(page4["text"].splitlines(), 1)
+                             if "السجل التجاري" in line)
     eligibility = {"requirements": [{
         "requirement_id": "REQ-1", "text": "صورة القيد في السجل التجاري سارية خلال العقد",
         "category": "REGISTRATION", "needs_review": False, "review_reasons": [],
-        "sources": [{"document_id": "tender-001", "pdf_page": 4, "quote": quote}],
+        "sources": [{"line_id": f"P004-L{registration_line:04d}"}],
     }], "warnings": []}
     expected = [("B7030", "104"), ("C9070", "2"), ("Tx-4100", "1")]
     technical = technical_payload(tender, 6, expected)
@@ -137,8 +138,9 @@ async def test_fake_ai_local_tender_end_to_end(tmp_path):
     results = [no_evidence_result("ELIGIBILITY", "REQ-1"), no_evidence_result("TECHNICAL", "TECH-1")]
     results.extend(no_evidence_result("BOQ", f"BOQ-{index}") for index in range(1, 4))
     company = read_pdf(company_paths[0], document_id="company-001", role="COMPANY")
-    company_quote = next(line for line in company["pages"][0]["text"].splitlines() if "الفني داخل مقار" in line)
-    results[1].update(evidence_found=True, document_id="company-001", pdf_page=1, quote=company_quote,
+    company_line = next(i for i, line in enumerate(company["pages"][0]["text"].splitlines(), 1)
+                        if "الفني داخل مقار" in line)
+    results[1].update(evidence_found=True, sources=[{"line_id": f"D001-P001-L{company_line:04d}"}],
                       assessment="UNCERTAIN", explanation="وصف النشاط وحده لا يثبت كل الالتزام الفني.")
     clients = [FakeClient(eligibility), FakeClient(technical), FakeClient({"results": results})]
     report = await analyze(tender_path, company_paths, reference_date="2026-10-26", mode="AI",

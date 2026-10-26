@@ -1,4 +1,4 @@
-﻿import copy
+import copy
 
 import pytest
 
@@ -22,8 +22,7 @@ def payload_for(tender):
     return {"requirements": [{
         "requirement_id": "REQ-001", "text": "يجب تقديم سجل تجاري ساري المفعول",
         "category": "REGISTRATION", "needs_review": False, "review_reasons": [],
-        "sources": [{"document_id": tender["document_id"], "pdf_page": 1,
-                     "quote": "يجب تقديم سجل تجاري ساري المفعول"}],
+        "sources": [{"line_id": "P001-L0001"}],
     }], "warnings": []}
 
 
@@ -34,6 +33,7 @@ class FakeClient:
     async def generate(self, **kwargs):
         self.calls += 1
         self.schema = kwargs["output_schema"]
+        self.input_data = kwargs["input_data"]
         return {"payload": copy.deepcopy(self.payload), "provider": "fake", "model": "test", "usage": None}
 
 
@@ -59,7 +59,11 @@ async def test_ai_extracts_eligibility_and_preserves_citation(sample_tender):
     client = FakeClient(payload_for(sample_tender))
     result = await extract_eligibility(sample_tender, client=client, mode="AI")
     validate_eligibility(result, sample_tender)
-    assert result["requirements"][0]["sources"][0]["pdf_page"] == 1
+    assert result["requirements"][0]["sources"] == [{
+        "document_id": sample_tender["document_id"], "pdf_page": 1,
+        "quote": sample_tender["pages"][0]["text"],
+    }]
+    assert client.input_data["pages"][0]["lines"][0]["line_id"] == "P001-L0001"
     assert result["provenance"]["provider"] == "fake"
     assert client.calls == 1
 
@@ -67,7 +71,7 @@ async def test_ai_extracts_eligibility_and_preserves_citation(sample_tender):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("field,value", [("quote", "ترخيص غير موجود"), ("pdf_page", 2),
                                        ("document_id", "wrong-document")])
-async def test_ai_rejects_fabricated_citations(sample_tender, field, value):
+async def test_ai_rejects_model_supplied_citation_fields(sample_tender, field, value):
     payload = payload_for(sample_tender)
     payload["requirements"][0]["sources"][0][field] = value
     with pytest.raises(ValueError):
@@ -108,3 +112,57 @@ async def test_invalid_mode_and_missing_client(sample_tender):
         await extract_eligibility(sample_tender, mode="wrong")
     with pytest.raises(ValueError):
         await extract_eligibility(sample_tender, mode="AI")
+
+
+@pytest.mark.asyncio
+async def test_all_requirements_and_multiple_sources_preserve_original_text(sample_tender):
+    sample_tender["pages"][0]["text"] = "  يجب  تقديم سجل تجاري.\t\n\n رخصة صيانة مطلوبة. "
+    second_page = copy.deepcopy(sample_tender["pages"][0])
+    second_page.update(pdf_page=2, text="\nترخيص صيانة ساري.\n")
+    sample_tender["pages"].append(second_page)
+    payload = payload_for(sample_tender)
+    payload["requirements"][0]["sources"] = [
+        {"line_id": "P001-L0001"}, {"line_id": "P002-L0002"}, {"line_id": "P001-L0001"},
+    ]
+    second_requirement = copy.deepcopy(payload["requirements"][0])
+    second_requirement.update(requirement_id="REQ-002", category="LICENSE",
+                              sources=[{"line_id": "P001-L0003"}])
+    payload["requirements"].append(second_requirement)
+    result = await extract_eligibility(sample_tender, client=FakeClient(payload), mode="AI")
+    validate_eligibility(result, sample_tender)
+    assert result["requirements"][0]["sources"] == [
+        {"document_id": sample_tender["document_id"], "pdf_page": 1,
+         "quote": "  يجب  تقديم سجل تجاري.\t"},
+        {"document_id": sample_tender["document_id"], "pdf_page": 2,
+         "quote": "ترخيص صيانة ساري."},
+    ]
+    assert result["requirements"][1]["sources"][0]["quote"] == " رخصة صيانة مطلوبة. "
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("requirement_index,source_index", [(0, 0), (0, 1), (1, 1)])
+async def test_nonexistent_line_rejected_in_every_requirement_and_source(sample_tender, requirement_index, source_index):
+    payload = payload_for(sample_tender)
+    payload["requirements"].append(copy.deepcopy(payload["requirements"][0]))
+    payload["requirements"][1]["requirement_id"] = "REQ-002"
+    for requirement in payload["requirements"]:
+        requirement["sources"] = [{"line_id": "P001-L0001"}, {"line_id": "P001-L0001"}]
+    payload["requirements"][requirement_index]["sources"][source_index] = {"line_id": "P001-L9999"}
+    with pytest.raises(ValueError, match="Unknown source line"):
+        await extract_eligibility(sample_tender, client=FakeClient(payload), mode="AI")
+
+
+@pytest.mark.asyncio
+async def test_approximate_quote_still_fails_validation(sample_tender):
+    sample_tender["pages"][0]["text"] = "يجب  تقديم سجل تجاري.\nترخيص صيانة مطلوب."
+    payload = payload_for(sample_tender)
+    payload["requirements"][0]["sources"].append({"line_id": "P001-L0002"})
+    result = await extract_eligibility(sample_tender, client=FakeClient(payload), mode="AI")
+    validate_eligibility(result, sample_tender)
+    result["requirements"][0]["sources"][1]["quote"] = "ترخيص صيانة غير موجود."
+    with pytest.raises(ValueError, match="Citation quote was not found"):
+        validate_eligibility(result, sample_tender)
+    result["requirements"][0]["sources"][1]["quote"] = "ترخيص صيانة مطلوب."
+    result["requirements"][0]["sources"][0]["quote"] = "يجب تقديم سجل تجاري."
+    with pytest.raises(ValueError, match="Citation quote was not found"):
+        validate_eligibility(result, sample_tender)
