@@ -236,6 +236,73 @@ def numbers_in_text(text):
             for token in re.findall(r"(?<![\w.])[+-]?\d+(?:[.,]\d+)?(?![\w.])", normalized)}
 
 
+def quantity_value(raw, sources):
+    """Read one explicit count from an exact, whole-token source span.
+
+    This deliberately recognizes a small count vocabulary, not arbitrary Arabic
+    arithmetic. Unsupported or qualified wording needs review, never a guess.
+    """
+    if not raw.strip():
+        raise ValueError("BOQ raw quantity is not supported by its sources.")
+    # The optional conjunction permits جهازي in وجهازي Plotter, but never a
+    # suffix of another word/number, identifier, decimal or grouped number.
+    pattern = (r"(?<![\w.,٫٬+/-])(?:و)?" + re.escape(raw)
+               + r"(?![\w٫٬+/-]|[.,]\d)")
+    matches = [(source["quote"], match) for source in sources
+               for match in re.finditer(pattern, source["quote"])]
+    if not matches:
+        raise ValueError("BOQ raw quantity is not supported by its sources.")
+    ambiguous = r"(?<!\w)(?:أو|او|بين|حوالي|نحو|تقريبًا|تقريبا|عدة|بعض|حسب|غير محدد|غير واضح|هذا جهازي)(?!\w)"
+    if any(re.search(ambiguous, quote) for quote, _ in matches):
+        return None
+    words = {
+        "واحد": 1, "واحدة": 1,
+        "اثنان": 2, "اثنين": 2, "إثنان": 2, "إثنين": 2,
+        "اثنتان": 2, "اثنتين": 2,
+        "جهازان": 2, "جهازين": 2, "جهازي": 2,
+        "طابعتان": 2, "طابعتين": 2, "وحدتان": 2, "وحدتين": 2,
+        "ثلاثة": 3, "ثلاث": 3, "أربعة": 4, "أربع": 4,
+        "خمسة": 5, "خمس": 5, "ستة": 6, "ست": 6,
+        "سبعة": 7, "سبع": 7, "ثمانية": 8, "ثمان": 8,
+        "تسعة": 9, "تسع": 9, "عشرة": 10, "عشر": 10,
+        "أحد عشر": 11, "إحدى عشرة": 11,
+        "اثنا عشر": 12, "اثني عشر": 12, "اثنتا عشرة": 12, "اثنتي عشرة": 12,
+    }
+    count = r"[+-]?\d+(?:[.,٫]\d+)?|" + "|".join(words)
+    units = r"جهاز(?:ًا|ا)?|أجهزة|طابعة|طابعات|وحدة|وحدات"
+    parsed = re.fullmatch(r"(?:و)?(?P<count>" + count + r")"
+                          r"(?:\s+(?:" + units + r"))?"
+                          r"(?:\s+[A-Za-z][A-Za-z0-9 ./-]*)?", raw.strip())
+    if not parsed:
+        return None
+    token = parsed["count"]
+    # Do not read 'اثنان' as 2 when it is part of 'اثنان وعشرون', or
+    # 'عشر' as 10 in 'اثنا عشر'. Larger unsupported expressions need review.
+    parts = ("|".join(words) + r"|اثنا|اثني|اثنتا|اثنتي"
+             r"|(?:عشر|ثلاث|أربع|خمس|ست|سبع|ثمان|تسع)(?:ون|ين)"
+             r"|مائة|مئة|مائتان|مائتين|مئتان|مئتين|ألف|ألفان|ألفين|آلاف|مليون|ملايين")
+    if token in words and any(
+        re.search(r"(?<!\w)(?:" + parts + r")\s+و?$", quote[:match.start()]) or
+        re.match(r"\s+و?(?:" + parts + r")(?!\w)", quote[match.end():])
+        for quote, match in matches
+    ):
+        return None
+    # جهازي can mean 'my device'. Require a product AND a quantity label or
+    # parallel count list, including when the selected span is only this word.
+    if token == "جهازي" and not any(
+        (re.match(r"\s+[A-Za-z]", quote[match.end():]) or
+         re.search(r"جهازي\s+[A-Za-z]", raw)) and
+        (re.search(r"(?:الكمية|العدد|عدد)\s*[:：]?\s*$", quote[:match.start()]) or
+         match[0].startswith("و") and
+         re.search(r"(?:" + count + r")\s+(?:" + units + r")(?!\w)", quote[:match.start()]))
+        for quote, match in matches
+    ):
+        return None
+    if re.search(r",\d{3}(?!\d)", token):
+        return None  # A comma may be a thousands separator, not a decimal mark.
+    return Decimal(words[token]) if token in words else next(iter(numbers_in_text(token)))
+
+
 def _validate_sources(sources, documents):
     if not sources:
         raise ValueError("Extracted requirement or quantity must have sources.")
@@ -281,8 +348,7 @@ def validate_technical(technical, tender):
         quantity = item["quantity"]
         _validate_sources(quantity["sources"], [tender])
         raw = quantity["raw_text"]
-        if not raw.strip() or not any(raw in src["quote"] for src in quantity["sources"]):
-            raise ValueError("BOQ raw quantity is not supported by its sources.")
+        supported = quantity_value(raw, quantity["sources"])
         value = quantity["decimal_value"]
         if value is None:
             if not item["needs_review"]:
@@ -292,7 +358,7 @@ def validate_technical(technical, tender):
                 number = Decimal(value)
             except InvalidOperation:
                 raise ValueError("Invalid normalized BOQ quantity.") from None
-            if not number.is_finite() or number <= 0 or number not in numbers_in_text(raw):
+            if not number.is_finite() or number <= 0 or supported is None or number != supported:
                 raise ValueError("Normalized BOQ quantity is not supported by raw_text.")
         if source_uncertain(item["sources"] + quantity["sources"], [tender], table=True) and not item["needs_review"]:
             raise ValueError("Uncertain quantity or table source requires review.")

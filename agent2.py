@@ -8,11 +8,11 @@ from llm_client import LLMClient
 from models import DocumentPages, Mode, TechnicalOutput
 from validation import (
     build_line_index, resolve_sources, documents_complete, page_text_uncertain, source_uncertain,
-    table_uncertain, validate_shape, validate_technical,
+    table_uncertain, quantity_value, validate_shape, validate_technical,
 )
 
 
-PROMPT_VERSION = "agent2-line-references-v3"
+PROMPT_VERSION = "agent2-line-references-v4"
 
 AGENT2_PROMPT = """
 أنت Agent 2 في مشروع TenderProof AI.
@@ -36,6 +36,8 @@ AGENT2_PROMPT = """
 - لا تكتب اقتباسات quote بنفسك.
 - استشهد بالسطر الذي يدعم كل معلومة فعلًا.
 - استشهد بمصدر مستقل للكمية داخل quantity.sources.
+- quantity.raw_text مقطع حرفي كامل من المصدر؛ لا تختصر رقمًا ولا تستبدل الكلمات بأرقام.
+- احتفظ بصيغة العدد الأصلية، ومنها المثنى؛ عند غموض الكمية استخدم decimal_value=null مع سبب المراجعة.
 - يمكن استخدام أكثر من سطر لدعم متطلب واحد.
 - لا تكرر بند توريد عادي كمتطلب فني مستقل.
 - لا تعتبر اسم العلامة التجارية وحده شرطًا فنيًا.
@@ -185,6 +187,9 @@ def _resolve_extraction(payload, line_lookup):
         )
 
         _validate_quantity(item)
+        if quantity_value(item["quantity"]["raw_text"], item["quantity"]["sources"]) is None:
+            item["quantity"]["decimal_value"] = None
+            _mark_review(item, "Quantity wording is ambiguous or unsupported; no value inferred.")
 
         if item["table_id"] is not None:
             raise ValueError(

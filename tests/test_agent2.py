@@ -211,6 +211,51 @@ class TestAgent2(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(ValueError, "not supported"):
             await extract_technical(make_tender(), client=FakeLLMClient(payload), mode="AI")
 
+    async def test_arabic_dual_quantities_from_failed_real_runs(self):
+        # The exact quantity/source forms recorded in case_101 and case_303.
+        line = " يجب تسعير صيانة ١٢ جهاز Xerox  و٨ أجهزة Canon  وجهازي Plotter  لمدة سنة بالجنيه المصري، مع سعر"
+        for raw in ("جهازي Plotter", "جهازي"):
+            with self.subTest(raw=raw):
+                tender, payload = make_tender(), make_payload()
+                tender["pages"][0].update(pdf_page=3, text=line + "\n")
+                item = payload["boq_items"][0]
+                item.update(description="صيانة أجهزة Plotter")
+                item["quantity"].update(raw_text=raw, decimal_value="2",
+                                        sources=[{"line_id": "P003-L0001"}])
+                item["sources"] = [{"line_id": "P003-L0001"}]
+                client = FakeLLMClient(payload)
+                result = await extract_technical(tender, client=client, mode="AI")
+                quantity = result["boq_items"][0]["quantity"]
+                self.assertEqual(quantity["decimal_value"], "2")
+                self.assertEqual(quantity["raw_text"], raw)
+                self.assertEqual(quantity["sources"], [{"document_id": "tender-001",
+                                 "pdf_page": 3, "quote": line}])
+                self.assertEqual(client.calls, 1)
+
+    async def test_partial_digit_from_real_run_is_rejected(self):
+        tender, payload = make_tender(), make_payload()
+        tender["pages"][0]["text"] = "١٢ جهاز Xerox وجهازي Plotter"
+        payload["boq_items"][0]["quantity"].update(raw_text="٢", decimal_value="2")
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            await extract_technical(tender, client=FakeLLMClient(payload), mode="AI")
+
+    async def test_wrong_value_for_complete_number_is_rejected(self):
+        tender, payload = make_tender(), make_payload()
+        tender["pages"][0]["text"] = "12 جهاز"
+        payload["boq_items"][0]["quantity"].update(raw_text="12", decimal_value="2")
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            await extract_technical(tender, client=FakeLLMClient(payload), mode="AI")
+
+    async def test_ambiguous_quantity_requires_review_without_inventing_value(self):
+        tender, payload = make_tender(), make_payload()
+        tender["pages"][0]["text"] = "الكمية: جهازان أو ثلاثة"
+        payload["boq_items"][0]["quantity"].update(raw_text="جهازان أو ثلاثة", decimal_value="2")
+        result = await extract_technical(tender, client=FakeLLMClient(payload), mode="AI")
+        item = result["boq_items"][0]
+        self.assertIsNone(item["quantity"]["decimal_value"])
+        self.assertTrue(item["needs_review"])
+        self.assertEqual(result["boq_status"], "NEEDS_REVIEW")
+
     async def test_malformed_review_flag_is_rejected_before_uncertainty_handling(self):
         tender = make_tender()
         tender["pages"][0]["readability"] = "PARTIAL"
