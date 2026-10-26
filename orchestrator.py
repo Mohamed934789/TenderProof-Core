@@ -19,6 +19,7 @@ async def analyze(
     technical_client: LLMClient | None = None,
     verification_client: LLMClient | None = None,
     mode: Mode = "MOCK",
+    company_documents_complete: bool = False,
 ) -> Report:
     """Read documents -> A1 + A2 -> validate_extractions -> A3 -> validate -> report.
     A1/A2 may run concurrently; A3 must await BOTH valid outputs.
@@ -32,6 +33,8 @@ async def analyze(
         eligibility_client, technical_client, verification_client
     )):
         raise ValueError("AI mode requires an LLMClient for every agent.")
+    if company_documents_complete and not company_paths:
+        raise ValueError("Document completeness confirmation requires company PDFs.")
     tender = read_pdf(
         tender_path,
         document_id="tender-001",
@@ -49,6 +52,9 @@ async def analyze(
             role="COMPANY",
         )
 
+        if company_documents_complete:
+            company["completeness"] = "COMPLETE"
+            company["completeness_basis"] = "USER_CONFIRMED"
         validate_document(company)
         company_documents.append(company)
 
@@ -141,6 +147,8 @@ def main():
     parser.add_argument("--reference-date", required=True, help="Evaluation date: YYYY-MM-DD")
     parser.add_argument("--mode", choices=("MOCK", "AI"), default="MOCK")
     parser.add_argument("--output", type=Path, default=Path("output/report.json"))
+    parser.add_argument("--company-documents-complete", action="store_true",
+                        help="Confirm ALL company documents were supplied; does not override unreadable text.")
     args = parser.parse_args()
 
     async def run():
@@ -151,7 +159,8 @@ def main():
         try:
             return await analyze(args.tender, args.company, reference_date=args.reference_date,
                                  eligibility_client=client, technical_client=client,
-                                 verification_client=client, mode=args.mode)
+                                 verification_client=client, mode=args.mode,
+                                 company_documents_complete=args.company_documents_complete)
         finally:
             if client is not None:
                 await client.aclose()

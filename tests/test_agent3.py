@@ -108,11 +108,12 @@ def test_invalid_result_coverage_is_rejected(mutation):
         run(results)
 
 
-def run_boq(offered_quantity, offered_unit="طابعة", quote=None, target_review=False):
+def run_boq(offered_quantity, offered_unit="طابعة", quote=None, target_review=False, warnings=()):
     eligibility, technical, docs = inputs()
     eligibility["requirements"] = []
     quote = quote or f"نقدم صيانة {offered_quantity or 'عدد غير محدد'} {offered_unit or ''} Xerox B7070"
     docs[0]["pages"][0]["text"] = quote
+    docs[0]["pages"][0]["warnings"] = list(warnings)
     technical["boq_items"] = [{
         "boq_item_id": "BOQ-1", "description": "صيانة طابعات Xerox B7070",
         "quantity": {"raw_text": "20", "decimal_value": "20", "sources": []},
@@ -210,3 +211,55 @@ def test_all_evidence_lines_keep_their_original_pages_and_whitespace():
         {"document_id": "nile-license", "pdf_page": 1, "quote": "  ترخيص صيانة.  "},
         {"document_id": "nile-license", "pdf_page": 2, "quote": " ينتهي الترخيص في 15 أكتوبر 2026\t"},
     ]
+
+
+@pytest.mark.parametrize("warning,expected", [
+    ("INFO: Unused font mapping warning.", "SATISFIED"),
+    ("TABLE: Table structure is unverified.", "SATISFIED"),
+    ("Unresolved font mapping affects extracted text.", "NEEDS_REVIEW"),
+])
+def test_advisory_notes_do_not_block_clear_valid_license(warning, expected):
+    text = "ينتهي الترخيص في 1 يناير 2027"
+    eligibility, technical, docs = inputs(text=text)
+    docs[0]["pages"][0]["warnings"] = [warning]
+    output = asyncio.run(verify_company(eligibility, technical, docs, reference_date="2026-11-01",
+                                       client=FakeClient([result_for(expiry_date="2027-01-01")]), mode="AI"))
+    assert output["findings"][0]["status"] == expected
+
+
+def test_explicit_noncompliance_does_not_require_an_invented_expiry_date():
+    text = "ترخيص الشركة غير ساري."
+    result = result_for(assessment="CONTRADICTS", expiry_date=None, explanation="الترخيص غير ساري صراحةً.")
+    assert run([result], text=text)[0]["status"] == "CONTRADICTED"
+
+
+@pytest.mark.parametrize("include_damaged_source,expected", [(False, "SATISFIED"), (True, "NEEDS_REVIEW")])
+def test_localized_damage_only_blocks_the_affected_evidence(include_damaged_source, expected):
+    eligibility, technical, docs = inputs(text="ينتهي الترخيص في 1 يناير 2027\nبيان تالف \ufffd", readability="PARTIAL")
+    docs[0]["pages"][0]["warnings"] = ["TEXT_LINE:2: Unmapped glyph."]
+    sources = [{"line_id": "D001-P001-L0001"}]
+    if include_damaged_source:
+        sources.append({"line_id": "D001-P001-L0002"})
+    output = asyncio.run(verify_company(eligibility, technical, docs, reference_date="2026-11-01",
+                                       client=FakeClient([result_for(sources=sources, expiry_date="2027-01-01")]), mode="AI"))
+    assert output["findings"][0]["status"] == expected
+
+
+def test_missing_evidence_needs_all_text_readable_even_when_damage_is_elsewhere():
+    eligibility, technical, docs = inputs(text="بيانات الشركة واضحة.\nبيان ترخيص غير مقروء \ufffd", readability="PARTIAL")
+    docs[0]["pages"][0]["warnings"] = ["TEXT_LINE:2: Unmapped glyph."]
+    output = asyncio.run(verify_company(eligibility, technical, docs, reference_date="2026-11-01",
+                                       client=FakeClient([no_evidence()]), mode="AI"))
+    assert output["findings"][0]["status"] == "NEEDS_REVIEW"
+
+
+def test_company_table_uncertainty_cannot_be_ignored_for_boq():
+    assert run_boq("20", warnings=["TABLE: Offered quantities have unverified columns."])["status"] == "NEEDS_REVIEW"
+
+
+def test_multi_line_quote_cannot_skip_localized_text_damage():
+    from validation import source_uncertain
+    _, _, docs = inputs(text="متطلب واضح.\nتاريخ تالف \ufffd", readability="PARTIAL")
+    docs[0]["pages"][0]["warnings"] = ["TEXT_LINE:2: Unmapped glyph."]
+    source = {"document_id": "nile-license", "pdf_page": 1, "quote": "واضح.\nتاريخ"}
+    assert source_uncertain([source], docs)

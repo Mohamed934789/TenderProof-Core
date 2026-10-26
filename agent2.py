@@ -7,11 +7,12 @@ from agent2_schema import agent2_output_schema
 from llm_client import LLMClient
 from models import DocumentPages, Mode, TechnicalOutput
 from validation import (
-    build_line_index, resolve_sources, documents_complete, validate_shape, validate_technical,
+    build_line_index, resolve_sources, documents_complete, page_text_uncertain, source_uncertain,
+    table_uncertain, validate_shape, validate_technical,
 )
 
 
-PROMPT_VERSION = "agent2-line-references-v2"
+PROMPT_VERSION = "agent2-line-references-v3"
 
 AGENT2_PROMPT = """
 أنت Agent 2 في مشروع TenderProof AI.
@@ -73,6 +74,10 @@ AGENT2_PROMPT = """
 - لا تعتمد على وجود رقم بجوار اسم جهاز وحده.
 - لا تستخرج مبالغ التأمين أو الأسعار ككميات.
 - احتفظ بمراجع السطور الأصلية، ولا تُنشئ اقتباسات.
+- لكل سطر needs_review يوضح غموض نص ذلك السطر فقط.
+- PARTIAL لا تعني أن كل السطور غير مقروءة. راجع السطر المستشهد به.
+- تحذيرات TABLE تخص الكميات وعلاقة أعمدة الجدول، ولا تجعل شرطاً نصياً واضحاً غامضاً.
+- تحذيرات INFO معلومات عامة. لا تتجاهل غموض المعنى أو التاريخ أو علاقة الصنف بالكمية.
 """
 
 
@@ -262,24 +267,17 @@ async def extract_technical(
 
     warnings = list(tender["warnings"])
 
-    uncertain_pages = {
-        page["pdf_page"]
-        for page in tender["pages"]
-        if (
-            page["readability"] != "READABLE"
-            or page["warnings"]
-            or any(
-                table["structure_quality"] != "RECOVERED"
-                for table in page["tables"]
-            )
-        )
-    }
+    uncertain_pages = {page["pdf_page"] for page in tender["pages"] if page_text_uncertain(page)}
+    uncertain_tables = {page["pdf_page"] for page in tender["pages"] if table_uncertain(page)}
 
     if uncertain_pages:
         warnings.append(
-            "PDF reading or table structure requires review "
+            "Some PDF text requires review "
             f"on pages: {sorted(uncertain_pages)}."
         )
+
+    if uncertain_tables:
+        warnings.append(f"Table structure is unverified on pages: {sorted(uncertain_tables)}.")
 
     incomplete = not documents_complete([tender])
 
@@ -313,31 +311,12 @@ async def extract_technical(
     validate_shape(extraction, TechnicalOutput)
 
     for item in extraction["boq_items"]:
-        source_pages = {
-            citation["pdf_page"]
-            for citation in (
-                item["sources"]
-                + item["quantity"]["sources"]
-            )
-        }
-
-        if source_pages & uncertain_pages:
-            _mark_review(
-                item,
-                "The cited PDF page has extraction uncertainty.",
-            )
+        if source_uncertain(item["sources"] + item["quantity"]["sources"], [tender], table=True):
+            _mark_review(item, "The cited quantity, PDF text or table structure has extraction uncertainty.")
 
     for requirement in extraction["technical_requirements"]:
-        source_pages = {
-            citation["pdf_page"]
-            for citation in requirement["sources"]
-        }
-
-        if source_pages & uncertain_pages:
-            _mark_review(
-                requirement,
-                "The cited PDF page has extraction uncertainty.",
-            )
+        if source_uncertain(requirement["sources"], [tender]):
+            _mark_review(requirement, "The cited PDF text has extraction uncertainty.")
 
     global_review_reasons = []
 

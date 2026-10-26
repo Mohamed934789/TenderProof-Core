@@ -1,3 +1,4 @@
+import re
 import unicodedata
 from pathlib import Path
 from pypdf import PdfReader
@@ -25,8 +26,29 @@ def _unshape_arabic(text: str) -> str:
 
 
 def normalize_arabic_text(text: str) -> tuple[str, bool]:
-    """Unshape text without guessing its order; Arabic still needs review."""
+    """Normalize presentation forms without guessing ordinary Arabic order."""
     return _unshape_arabic(text), _has_arabic(text)
+
+
+def _arabic_order_errors(value: str) -> int:
+    count = 0
+    forms = {"INITIAL": (False, True), "MEDIAL": (True, True),
+             "FINAL": (True, False), "ISOLATED": (False, False)}
+    for word in value.split():
+        edges = []
+        for char in word:
+            if not unicodedata.category(char).startswith("L"):
+                continue
+            name = unicodedata.name(char, "")
+            edges.append(next((pair for form, pair in forms.items()
+                               if "ARABIC" in name and f"{form} FORM" in name), None))
+        if len(edges) < 2:
+            continue
+        count += bool(edges[0] and edges[0][0])
+        count += bool(edges[-1] and edges[-1][1])
+        count += sum(left[1] != right[0] for left, right in zip(edges, edges[1:])
+                     if left is not None and right is not None)
+    return count
 
 
 def _recover_arabic_run(text: str) -> str:
@@ -34,7 +56,8 @@ def _recover_arabic_run(text: str) -> str:
 
     INITIAL forms belong at the start of a logical word, FINAL forms at its
     end. Adjacent forms must agree on whether their shared edge is connected.
-    Require at least two inconsistent edges, all resolved by reversing the run.
+    Require inconsistent edges resolved by reversal; a single error is sufficient
+    only for a complete word bounded by whitespace/punctuation on both sides.
     Ordinary Unicode Arabic provides no such evidence and is never reversed.
     This is intentionally limited to pypdf's directional runs: Arabic-Indic
     digits and neutral punctuation in those runs were prepended with the letters.
@@ -44,29 +67,15 @@ def _recover_arabic_run(text: str) -> str:
         content = line.rstrip("\r\n")
         ending = line[len(content):]
 
-        def errors(value: str) -> int:
-            count = 0
-            forms = {"INITIAL": (False, True), "MEDIAL": (True, True),
-                     "FINAL": (True, False), "ISOLATED": (False, False)}
-            for word in value.split():
-                edges = []
-                for char in word:
-                    if not unicodedata.category(char).startswith("L"):
-                        continue
-                    name = unicodedata.name(char, "")
-                    edges.append(next((pair for form, pair in forms.items()
-                                       if "ARABIC" in name and f"{form} FORM" in name), None))
-                if len(edges) < 2:
-                    continue
-                count += bool(edges[0] and edges[0][0])
-                count += bool(edges[-1] and edges[-1][1])
-                count += sum(left[1] != right[0] for left, right in zip(edges, edges[1:])
-                             if left is not None and right is not None)
-            return count
-
         # LTR scripts and European digits are hard boundaries, never reversed.
         has_ltr = any(unicodedata.bidirectional(c) in {"L", "EN"} for c in content)
-        if not has_ltr and errors(content) >= 2 and errors(content[::-1]) == 0:
+        errors = _arabic_order_errors(content)
+        # A complete, whitespace/punctuation-bounded word has an unambiguous
+        # direction when reversing removes its single contextual-form error.
+        bounded_word = (bool(content) and not content[0].isalpha() and not content[-1].isalpha()
+                        and len([word for word in content.split()
+                                 if any(char.isalpha() for char in word)]) == 1)
+        if not has_ltr and (errors >= 2 or errors == 1 and bounded_word) and _arabic_order_errors(content[::-1]) == 0:
             content = content[::-1]
         result.append(_unshape_arabic(content) + ending)
     return "".join(result)
@@ -97,6 +106,7 @@ def read_pdf(
 
         for page_number, pdf_page in enumerate(reader.pages, start=1):
             page_warnings = []
+            uncertain_fragments = []
 
             try:
                 extracted_text = pdf_page.extract_text()
@@ -126,7 +136,15 @@ def read_pdf(
                         # Some PDFs (e.g. nested forms) may report callbacks twice.
                         # Never reconstruct a page from inconsistent callbacks.
                         if "".join(chunks) == original_text:
-                            page_text = "".join(_recover_arabic_run(t) for t in chunks)
+                            repaired = []
+                            for chunk in chunks:
+                                value = _recover_arabic_run(chunk)
+                                repaired.append(value)
+                                for raw, normalized in zip(chunk.splitlines(), value.splitlines()):
+                                    if (_arabic_order_errors(raw) > 0
+                                            and normalized == _unshape_arabic(raw)):
+                                        uncertain_fragments.append(normalized.strip())
+                            page_text = "".join(repaired)
                         else:
                             page_warnings.append(
                                 "Arabic extraction callbacks did not match page text."
@@ -134,24 +152,26 @@ def read_pdf(
                     except Exception:
                         page_warnings.append("Arabic directional run extraction failed.")
                     page_text, _ = normalize_arabic_text(page_text)
-                    page_warnings.append(
-                        "Arabic text is PARTIAL: contextual forms were normalized and "
-                        "only runs with consistent reversed-form evidence were reordered. "
-                        "Uncertain Arabic order, diacritics, and numeric order require "
-                        "review against the PDF; no semantic correction was attempted."
-                    )
-
-                if "\ufffd" in page_text:
-                    readability = "PARTIAL"
-                    page_warnings.append(
-                        "Extracted text contains replacement characters; "
-                        "some content may be corrupted."
-                    )
-                else:
-                    readability = "PARTIAL" if _has_arabic(page_text) else "READABLE"
+                    if page_text != original_text:
+                        page_warnings.append("INFO: Arabic presentation forms/order normalized using contextual glyph evidence.")
+                # Reading quality concerns text, separately from unreconstructed tables.
+                # Keep malformed spans visible instead of guessing missing letters.
+                for number, line in enumerate(page_text.splitlines(), 1):
+                    if any(fragment and fragment in line for fragment in uncertain_fragments):
+                        page_warnings.append(f"TEXT_LINE:{number}: Uncertain Arabic contextual-form order.")
+                    if ("\ufffd" in line or re.search(r"\(cid:\d+\)", line)
+                            or any(unicodedata.category(c) in {"Co", "Cs"}
+                                   or unicodedata.category(c) == "Cc" and c not in "\t" for c in line)):
+                        page_warnings.append(f"TEXT_LINE:{number}: Extracted text contains replacement characters or unmapped glyphs.")
+                    # Observed in the local PDF: a lam-alef glyph maps to an isolated
+                    # lam, including the negation in the experience condition. Do not
+                    # invent the missing alef or trust the affected condition.
+                    if re.search(r"(?<![\w\u0640])ل(?![\w\u0640])", line):
+                        page_warnings.append(f"TEXT_LINE:{number}: Isolated Arabic lam may be a truncated ligature.")
+                readability = "PARTIAL" if any(not w.startswith("INFO:") for w in page_warnings) else "READABLE"
 
             page_warnings.append(
-                "Table structure and visual reading order were not verified."
+                "TABLE: Table structure and visual reading order were not verified."
             )
 
             pages.append(

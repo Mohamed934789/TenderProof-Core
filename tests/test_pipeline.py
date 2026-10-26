@@ -99,14 +99,14 @@ async def test_fake_ai_full_pipeline_on_generated_pdf(tmp_path):
     validate_report(report, documents)
     assert [client.calls for client in clients] == [1, 1, 1]
     assert len(report["findings"]) == 2
-    assert all(finding["status"] == "NEEDS_REVIEW" for finding in report["findings"])
+    assert [finding["status"] for finding in report["findings"]] == ["SATISFIED", "NEEDS_REVIEW"]
     assert all(finding["evidence"] for finding in report["findings"])
     assert report["technical"]["boq_items"][0]["quantity"]["decimal_value"] == "104"
     # Rechecking a report must reject a tampered, unsupported result.
     bad = copy.deepcopy(report)
-    bad["findings"][0]["status"] = "SATISFIED"
-    bad["findings"][0]["review_required"] = False
-    bad["findings"][0]["uncertainty_reasons"] = []
+    bad["findings"][1]["status"] = "SATISFIED"
+    bad["findings"][1]["review_required"] = False
+    bad["findings"][1]["uncertainty_reasons"] = []
     with pytest.raises(ValueError):
         validate_report(bad, documents)
 
@@ -162,3 +162,88 @@ async def test_fake_ai_local_tender_end_to_end(tmp_path):
     artifact = Path("output/integration-fake-ai-report.json")
     artifact.parent.mkdir(exist_ok=True)
     artifact.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+@pytest.mark.asyncio
+async def test_changing_company_pdf_changes_all_four_findings(tmp_path):
+    import re
+
+    tender_path, company_path = tmp_path / "tender.pdf", tmp_path / "company.pdf"
+    write_pdf(tender_path, ["Maintenance license must be valid."])
+    eligibility = {"requirements": [{
+        "requirement_id": "REQ-1", "text": "Maintenance license must be valid.",
+        "category": "LICENSE", "needs_review": False, "review_reasons": [],
+        "sources": [{"line_id": "P001-L0001"}],
+    }], "warnings": []}
+    technical = {"boq_status": "NEEDS_REVIEW", "boq_review_reasons": ["Tender completeness unknown."],
+                 "boq_items": [], "technical_requirements": []}
+
+    class CompanyEvidenceClient:
+        # Always read the CURRENT company PDF lines. Python, not this fake,
+        # determines whether a supported expiry is before the reference date.
+        async def generate(self, *, instructions, input_data, output_schema):
+            lines = input_data["documents"][0]["pages"][0]["lines"]
+            line = next((line for line in lines if "Maintenance license" in line["text"]), None)
+            result = no_evidence_result("ELIGIBILITY", "REQ-1")
+            if line:
+                expiry = re.search(r"\d{4}-\d{2}-\d{2}", line["text"])
+                result.update(evidence_found=True, sources=[{"line_id": line["line_id"]}],
+                              assessment="SUPPORTS" if expiry else "UNCERTAIN",
+                              expiry_date=expiry.group() if expiry else None)
+            return {"payload": {"results": [result]}, "provider": "fake", "model": "offline", "usage": None}
+
+    findings = []
+    for text, expected in [
+        ("Maintenance license expires on 2027-01-01.", "SATISFIED"),
+        ("Maintenance license expires on 2025-01-01.", "CONTRADICTED"),
+        ("Company profile only; no supporting license.", "MISSING_EVIDENCE"),
+        ("Maintenance license expiry is unclear.", "NEEDS_REVIEW"),
+    ]:
+        write_pdf(company_path, [text])
+        report = await analyze(tender_path, [company_path], reference_date="2026-10-26", mode="AI",
+                               eligibility_client=FakeClient(eligibility), technical_client=FakeClient(technical),
+                               verification_client=CompanyEvidenceClient(), company_documents_complete=True)
+        finding = report["findings"][0]
+        assert finding["status"] == expected
+        assert report["documents"][1]["completeness_basis"] == "USER_CONFIRMED"
+        if finding["evidence"]:
+            assert text == finding["evidence"][0]["quote"]
+        findings.append(finding)
+    assert len({finding["status"] for finding in findings}) == 4
+
+    # The same missing document is not a proven absence without explicit confirmation.
+    write_pdf(company_path, ["Company profile only; no supporting license."])
+    report = await analyze(tender_path, [company_path], reference_date="2026-10-26", mode="AI",
+                           eligibility_client=FakeClient(eligibility), technical_client=FakeClient(technical),
+                           verification_client=CompanyEvidenceClient())
+    assert report["findings"][0]["status"] == "NEEDS_REVIEW"
+    assert report["documents"][1]["completeness"] == "UNKNOWN"
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(not (FIXTURES / "ida-335.pdf").is_file(), reason="Private local tender is optional.")
+async def test_real_company_quarterly_service_contradicts_tender_monthly_requirement():
+    from agent2 import extract_technical
+    from agent3 import verify_company
+
+    tender = read_pdf(FIXTURES / "ida-335.pdf", document_id="tender-001", role="TENDER")
+    company = read_pdf(FIXTURES / "01_company_profile.pdf", document_id="company-001", role="COMPANY")
+    line_number = next(i for i, line in enumerate(tender["pages"][6]["text"].splitlines(), 1)
+                       if "الصيانة الدورية مرة كل شهر" in line)
+    payload = {"boq_status": "NEEDS_REVIEW", "boq_review_reasons": ["Tender coverage unknown."],
+               "boq_items": [], "technical_requirements": [{
+                   "technical_id": "TECH-MONTHLY", "text": "الصيانة الدورية مرة كل شهر",
+                   "category": "SPECIFICATION", "needs_review": False, "review_reasons": [],
+                   "sources": [{"line_id": f"P007-L{line_number:04d}"}],
+               }]}
+    technical = await extract_technical(tender, client=FakeClient(payload), mode="AI")
+    assert not technical["technical_requirements"][0]["needs_review"]
+    company_line = next(i for i, line in enumerate(company["pages"][0]["text"].splitlines(), 1)
+                        if "ربع سنوية" in line)
+    result = no_evidence_result("TECHNICAL", "TECH-MONTHLY")
+    result.update(evidence_found=True, sources=[{"line_id": f"D001-P001-L{company_line:04d}"}],
+                  assessment="CONTRADICTS", explanation="المطلوب شهري، بينما مستند الشركة ينص على صيانة ربع سنوية.")
+    output = await verify_company({"requirements": []}, technical, [company], reference_date="2026-10-26",
+                                  client=FakeClient({"results": [result]}), mode="AI")
+    assert output["findings"][0]["status"] == "CONTRADICTED"
+    assert "ربع سنوية" in output["findings"][0]["evidence"][0]["quote"]

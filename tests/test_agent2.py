@@ -219,5 +219,29 @@ class TestAgent2(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):
             await extract_technical(tender, client=FakeLLMClient(payload), mode="AI")
 
+
+    async def test_clear_technical_text_is_not_blocked_by_unverified_table_on_same_page(self):
+        tender = make_tender()
+        page = tender["pages"][0]
+        page["text"] += "Clear technical condition.\nDamaged text: \ufffd"
+        page["readability"] = "PARTIAL"
+        page["warnings"] = ["TABLE: Table structure is unverified.", "TEXT_LINE:3: Unmapped character."]
+        payload = make_payload()
+        payload["technical_requirements"] = [{
+            "technical_id": "TECH-1", "text": "Clear technical condition.", "category": "SPECIFICATION",
+            "needs_review": False, "review_reasons": [], "sources": [{"line_id": "P006-L0002"}],
+        }]
+        result = await extract_technical(tender, client=FakeLLMClient(payload), mode="AI")
+        self.assertFalse(result["technical_requirements"][0]["needs_review"])
+        self.assertTrue(result["boq_items"][0]["needs_review"])
+        self.assertEqual(result["boq_items"][0]["quantity"]["decimal_value"], "104")
+
+    async def test_informational_warning_does_not_force_boq_review(self):
+        tender = make_tender()
+        tender["pages"][0]["warnings"] = ["INFO: Unused font mapping warning."]
+        result = await extract_technical(tender, client=FakeLLMClient(make_payload()), mode="AI")
+        self.assertEqual(result["boq_status"], "FOUND")
+        self.assertFalse(result["boq_items"][0]["needs_review"])
+
 if __name__ == "__main__":
     unittest.main()

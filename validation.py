@@ -46,6 +46,7 @@ def build_line_index(tender: DocumentPages, *, prefix=""):
             indexed_lines.append({
                 "line_id": line_id,
                 "text": raw_line,
+                "needs_review": page_text_uncertain(page, raw_line),
             })
 
         indexed_pages.append({
@@ -128,13 +129,54 @@ def validate_shape(value, contract, path="output"):
         raise ValueError(f"{path}: expected {contract.__name__}.")
 
 
+def advisory_warning(warning):
+    # Only explicitly scoped informational/table notes are non-textual.
+    return (warning.startswith(("INFO:", "TABLE:"))
+            or warning == "Table structure and visual reading order were not verified.")
+
+
+def page_text_uncertain(page, quote=None):
+    if page["readability"] == "UNREADABLE":
+        return True
+    affected_lines = set()
+    for warning in page["warnings"]:
+        if advisory_warning(warning):
+            continue
+        match = re.match(r"TEXT_LINE:(\d+):", warning)
+        if match:
+            affected_lines.add(int(match[1]))
+        else:
+            return True  # Unknown/material warnings remain conservative.
+    if affected_lines:
+        if quote is None:
+            return True
+        lines = page["text"].splitlines(keepends=True)
+        if any(number < 1 or number > len(lines) for number in affected_lines):
+            return True
+        offset, affected_spans = 0, []
+        for number, line in enumerate(lines, 1):
+            if number in affected_lines:
+                affected_spans.append((offset, offset + len(line)))
+            offset += len(line)
+        occurrences = list(re.finditer(re.escape(quote), page["text"]))
+        return not occurrences or any(match.start() < end and start < match.end()
+                                      for match in occurrences for start, end in affected_spans)
+    return page["readability"] != "READABLE"
+
+
+def table_uncertain(page):
+    return (any(w.startswith("TABLE:") or w == "Table structure and visual reading order were not verified."
+                for w in page["warnings"])
+            or any(t["structure_quality"] != "RECOVERED" or t["warnings"] for t in page["tables"]))
+
+
 def documents_complete(documents):
-    """Missing evidence needs a confirmed, fully readable document set."""
+    """Absence needs a confirmed complete set and fully searchable text."""
     return bool(documents) and all(
         doc["completeness"] == "COMPLETE"
         and doc["completeness_basis"] in {"USER_CONFIRMED", "TEST_FIXTURE"}
-        and doc["pages"] and not doc["warnings"]
-        and all(page["readability"] == "READABLE" and not page["warnings"]
+        and doc["pages"] and all(advisory_warning(w) for w in doc["warnings"])
+        and all(not page_text_uncertain(page)
                 and all(table["structure_quality"] == "RECOVERED" and not table["warnings"]
                         for table in page["tables"])
                 for page in doc["pages"])
@@ -178,9 +220,9 @@ def validate_citation(citation: Citation, documents: list[DocumentPages]) -> Non
         raise ValueError("Citation quote was not found in the referenced page.")
 
 
-def source_uncertain(citations, documents):
+def source_uncertain(citations, documents, *, table=False):
     return any(
-        page["readability"] != "READABLE" or page["warnings"]
+        page_text_uncertain(page, citation["quote"]) or table and table_uncertain(page)
         for citation in citations for doc in documents
         if doc["document_id"] == citation["document_id"]
         for page in doc["pages"] if page["pdf_page"] == citation["pdf_page"]
@@ -252,8 +294,8 @@ def validate_technical(technical, tender):
                 raise ValueError("Invalid normalized BOQ quantity.") from None
             if not number.is_finite() or number <= 0 or number not in numbers_in_text(raw):
                 raise ValueError("Normalized BOQ quantity is not supported by raw_text.")
-        if source_uncertain(quantity["sources"], [tender]) and not item["needs_review"]:
-            raise ValueError("Uncertain quantity source requires review.")
+        if source_uncertain(item["sources"] + quantity["sources"], [tender], table=True) and not item["needs_review"]:
+            raise ValueError("Uncertain quantity or table source requires review.")
         if item["table_id"] is not None:
             tables = [t for p in tender["pages"] for t in p["tables"]
                       if t["table_id"] == item["table_id"]]
@@ -300,8 +342,12 @@ def validate_verification(verification, eligibility, technical, company_document
             if not evidence:
                 raise ValueError(f"{status} finding requires evidence.")
             item = targets[(finding["target_type"], finding["target_id"])]
-            if item["needs_review"] or source_uncertain(evidence, company_documents):
+            if item["needs_review"] or source_uncertain(evidence, company_documents, table=finding["target_type"] == "BOQ"):
                 raise ValueError("Uncertain target or company evidence requires review.")
+        if status == "MISSING_EVIDENCE" and finding["target_type"] == "BOQ" and any(
+            table_uncertain(page) for doc in company_documents for page in doc["pages"]
+        ):
+            raise ValueError("Missing BOQ evidence requires searchable table relationships.")
         if status == "MISSING_EVIDENCE" and evidence:
             raise ValueError("Missing evidence finding cannot contain evidence.")
         if finding["review_required"] != (status == "NEEDS_REVIEW"):
@@ -313,8 +359,6 @@ def validate_verification(verification, eligibility, technical, company_document
 def validate_report(report: Report, documents: list[DocumentPages]) -> None:
     validate_shape(report, Report)
     date.fromisoformat(report["reference_date"])
-    for document in documents:
-        validate_document(document)
     for document in documents:
         validate_document(document)
     if len({doc["document_id"] for doc in documents}) != len(documents):

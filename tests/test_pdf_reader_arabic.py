@@ -8,6 +8,7 @@ from unittest.mock import patch
 from pypdf import PdfReader
 
 from pdf_reader import _recover_arabic_run, normalize_arabic_text, read_pdf
+from validation import build_line_index, documents_complete, source_uncertain, validate_citation
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -78,9 +79,9 @@ class TestArabicExtraction(unittest.TestCase):
                     self.assertEqual(re.findall(pattern, text), re.findall(pattern, raw))
                     self.assertEqual(Counter(c for c in text if c.isdigit()),
                                      Counter(c for c in raw if c.isdigit()))
-                    self.assertEqual(page["readability"], "PARTIAL")
+                    self.assertEqual(page["readability"], "READABLE")
                     self.assertEqual(page["extraction_method"], "NATIVE_TEXT")
-                    self.assertTrue(any("Uncertain Arabic order" in w for w in page["warnings"]))
+                    self.assertTrue(any(w.startswith("INFO:") for w in page["warnings"]))
                     if filename == "04_previous_work.pdf":
                         self.assertIn(f"TEST-CONTRACT-10{number}", text)
                         self.assertIn(f"TEST-ACCEPT-10{number}", text)
@@ -93,7 +94,7 @@ class TestArabicExtraction(unittest.TestCase):
                      "Laptop", "Monitor", "Printer", "25000", "6000", "4500"):
             self.assertIn(text, page["text"])
         self.assertEqual(page["tables"], [])
-        self.assertEqual(page["readability"], "PARTIAL")
+        self.assertEqual(page["readability"], "READABLE")
 
     def _read_mock_arabic(self, callback_text=None, fail=False):
         raw = SHAPED[::-1]
@@ -120,6 +121,53 @@ class TestArabicExtraction(unittest.TestCase):
         self.assertEqual(page["text"], "نايب")
         self.assertEqual(page["readability"], "PARTIAL")
         self.assertTrue(any("run extraction failed" in w for w in page["warnings"]))
+
+
+    def test_short_bounded_words_recover_from_contextual_forms(self):
+        # These fragments are present in the real company profile; no dictionary substitution.
+        self.assertEqual(_recover_arabic_run(" ﻒﺋﺎﻇوو ، "), " ، ووظائف ")
+        self.assertEqual(_recover_arabic_run("،حﻼﺻﻺﻟ "), " للإصلاح،")
+        page = read_pdf(FIXTURES / "01_company_profile.pdf", document_id="company", role="COMPANY")["pages"][0]
+        self.assertIn("ووظائف", page["text"])
+        self.assertIn("للإصلاح", page["text"])
+        self.assertEqual(page["readability"], "READABLE")
+
+    def test_correctly_extracted_arabic_does_not_require_review_just_for_language(self):
+        doc = read_pdf(FIXTURES / "04_previous_work.pdf", document_id="works", role="COMPANY",
+                       completeness="COMPLETE", completeness_basis="TEST_FIXTURE")
+        self.assertTrue(documents_complete([doc]))
+        for page in doc["pages"]:
+            quote = next(line for line in page["text"].splitlines() if "نطاق العقد" in line)
+            citation = {"document_id": "works", "pdf_page": page["pdf_page"], "quote": quote}
+            validate_citation(citation, [doc])
+            self.assertFalse(source_uncertain([citation], [doc]))
+            self.assertTrue(source_uncertain([citation], [doc], table=True))
+
+    def test_local_tender_text_and_uncertainty_match_inspected_pages(self):
+        path = FIXTURES / "ida-335.pdf"
+        if not path.is_file():
+            self.skipTest("Private local tender is optional.")
+        doc = read_pdf(path, document_id="tender", role="TENDER")
+        pages, lookup = build_line_index(doc)
+        self.assertEqual(doc["pages"][2]["readability"], "READABLE")
+        self.assertEqual(doc["pages"][6]["readability"], "READABLE")
+        self.assertEqual(doc["pages"][3]["readability"], "PARTIAL")
+        self.assertEqual(doc["pages"][5]["readability"], "PARTIAL")
+        self.assertEqual(doc["completeness"], "UNKNOWN")
+        for number in (3, 4, 6, 7):
+            raw = PdfReader(path).pages[number - 1].extract_text()
+            self.assertEqual(Counter(c for c in doc["pages"][number - 1]["text"] if c.isdigit()),
+                             Counter(c for c in raw if c.isdigit()))
+        registration = next(c for c in lookup.values() if c["pdf_page"] == 4 and "السجل التجاري" in c["quote"])
+        experience = next(c for c in lookup.values() if c["pdf_page"] == 4 and "ثلاث سنوات حديثة" in c["quote"])
+        technical = next(c for c in lookup.values() if c["pdf_page"] == 6 and "تقديم الدعم الفني الكامل" in c["quote"])
+        quantity = next(c for c in lookup.values() if c["pdf_page"] == 6 and "B7030" in c["quote"])
+        self.assertFalse(source_uncertain([registration, technical], [doc]))
+        self.assertTrue(source_uncertain([experience], [doc]))
+        self.assertTrue(source_uncertain([quantity], [doc], table=True))
+        # The visible negation is truncated by the font map: flag it, never invent letters.
+        self.assertIn("وان ل", experience["quote"])
+        self.assertTrue(any(line["needs_review"] for page in pages if page["pdf_page"] == 4 for line in page["lines"]))
 
 
 if __name__ == "__main__":

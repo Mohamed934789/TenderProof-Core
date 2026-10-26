@@ -36,10 +36,15 @@ Core files:
 - `llm_client.py`, `openai_adapter.py`: shared provider interface and API adapter.
 - `orchestrator.py`: complete pipeline and CLI above.
 
-Arabic reading and visual table order remain uncertain; OCR and table reconstruction
-are not implemented. Arabic/partial pages retain `NEEDS_REVIEW`. Reading every PDF
-page does not confirm document completeness. `MISSING_EVIDENCE` requires an explicitly
-complete and fully readable company document set; the CLI leaves completeness UNKNOWN.
+Readability describes extracted text, not document completeness or table quality.
+Clear Arabic lines can support findings even on a page with a separate uncertain line.
+`TEXT_LINE:<n>:` identifies an affected line; `TABLE:` notes keep unverified BOQ
+relationships under review without blocking clear prose. Other reading warnings
+remain material. OCR and table reconstruction are not implemented.
+
+`MISSING_EVIDENCE` requires a confirmed complete, readable company document set.
+Use `--company-documents-complete` ONLY when all company documents were supplied;
+the default stays UNKNOWN. This confirmation never overrides text corruption.
 Review citations against the original PDFs before making eligibility decisions.
 
 Optional local fixture `tests/fixtures/ida-335.pdf` is private and ignored by Git.
