@@ -1,0 +1,373 @@
+{
+  "product": "TenderProof AI Final",
+  "source_core_commit": "186dbeb",
+  "source_web_branch": "feature/web-app",
+  "web_worktree_changes_committed": false,
+  "ui_url": "http://127.0.0.1:8503",
+  "api_url": "http://127.0.0.1:8002",
+  "default_mode": "Saved Demo / MOCK; paid AI disabled",
+  "synthetic_pdf_count": 25,
+  "contains_secrets": false,
+  "contains_runtime_or_venv": false,
+  "paid_calls_during_packaging": 0,
+  "files": [
+    {
+      "path": ".dockerignore",
+      "bytes": 411,
+      "sha256": "83533f8ddb94a83f9d012f93c7196382b013520306c8867f8b031a13630f77ee"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 782,
+      "sha256": "1088ceafcc99d989498a02dbf19bef79d95a2c2dd62110875e02757da2f5b8d3"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "bytes": 270,
+      "sha256": "306815eb458abdafb574b60dc22f3d69584e0dce1219a11398847a75f7a4acc0"
+    },
+    {
+      "path": "agent1.py",
+      "bytes": 5399,
+      "sha256": "5520eb7e36311190f1c90d8137db35a3f337cb189e0449504632f74006f0b7c2"
+    },
+    {
+      "path": "agent2.py",
+      "bytes": 14995,
+      "sha256": "fddaf1076ecc23556fff1ea08962cdf40c7304f07ad7141360973ae40c3fd368"
+    },
+    {
+      "path": "agent2_schema.py",
+      "bytes": 3729,
+      "sha256": "d3861fc64fda5e7d91552f5e6870432fbe7107f4f30fffa8a80a65f8d88bbdd2"
+    },
+    {
+      "path": "agent3.py",
+      "bytes": 19804,
+      "sha256": "cbc124b21f89d3df74b6b7fb6fb891e6953e094f8bb692ec89a75da02e92b81e"
+    },
+    {
+      "path": "demo/case_101/01_company_profile.pdf",
+      "bytes": 96661,
+      "sha256": "b94241b56e49b4006d120a7b446d322c4d1c12403b107d690f1af9c97377ca55"
+    },
+    {
+      "path": "demo/case_101/02_activity_license.pdf",
+      "bytes": 93789,
+      "sha256": "44e225e56257cbccadc45492c956b0d77141f6b95e2abfbe3a4c105c941c8355"
+    },
+    {
+      "path": "demo/case_101/03_tax_statement.pdf",
+      "bytes": 94035,
+      "sha256": "ea31b53f8f24030641b21b5878421c06614939419173e639754157cb3d9f1b56"
+    },
+    {
+      "path": "demo/case_101/04_previous_work.pdf",
+      "bytes": 107783,
+      "sha256": "2059bc32e0bbb64af87035d4d9dfa66223e8e641f0dfd8ada2e0e97043c361ae"
+    },
+    {
+      "path": "demo/case_101/05_maintenance_authorization.pdf",
+      "bytes": 95453,
+      "sha256": "b31eeb0c145f9ac7078807c8c1dfe81a8c3fc51d08a3e46c6d803574eb4d12af"
+    },
+    {
+      "path": "demo/case_101/06_service_commitment.pdf",
+      "bytes": 95085,
+      "sha256": "da03687d6643107e9b97c2b6ae718dd49cf3f0972bcef95a0a0e31a8e870f781"
+    },
+    {
+      "path": "demo/case_101/07_technical_team.pdf",
+      "bytes": 95693,
+      "sha256": "ef981bf9525e8c3694ef1c69ea3e8e4b51eeaf05bd718798de841a294cb9f1e3"
+    },
+    {
+      "path": "demo/case_101/08_financial_offer.pdf",
+      "bytes": 94331,
+      "sha256": "c85c6f9f5a2e85d37231de38e0897a04ba5b078b2d4f16d3fe9f080f1ad0d810"
+    },
+    {
+      "path": "demo/case_101/report.json",
+      "bytes": 47276,
+      "sha256": "52d987f198ca204345f21e7a0a03f72b32ad126b6275c3cbaf22644bd57f9d72"
+    },
+    {
+      "path": "demo/case_101/requirements_ar.pdf",
+      "bytes": 118567,
+      "sha256": "0f1f1478518b524bb59ef0259c645b7ae5f5663c9212509844f76f5506a4ae36"
+    },
+    {
+      "path": "demo/case_202/01_company_profile.pdf",
+      "bytes": 96661,
+      "sha256": "f1c14d403850658130ec2179bd0ed02ce9653b1fdcd5dc5b9860d5d9a8358ea2"
+    },
+    {
+      "path": "demo/case_202/02_activity_license.pdf",
+      "bytes": 93744,
+      "sha256": "7c2aaf218523bac36f5d997fd4b638c9001a484c764ed030e0a472b00c462260"
+    },
+    {
+      "path": "demo/case_202/03_tax_statement.pdf",
+      "bytes": 94073,
+      "sha256": "221a3fa068e22fad9f6f9d25b7e135a56bab9a71e98653d28a546ecefa042497"
+    },
+    {
+      "path": "demo/case_202/04_previous_work.pdf",
+      "bytes": 107807,
+      "sha256": "431ba2d41138616ba7fea87cd8b982f25038f2e0d4d09aa0b70ecfd2cacb8356"
+    },
+    {
+      "path": "demo/case_202/05_maintenance_authorization.pdf",
+      "bytes": 95310,
+      "sha256": "dbfb5087fa3f014f8a9fdea38e7c8a21740c91c22967878db5cc73269e0f3c89"
+    },
+    {
+      "path": "demo/case_202/06_service_commitment.pdf",
+      "bytes": 95154,
+      "sha256": "f8a60eb74015e6a70b2f6f8a8d0067e4524fa465f15963d5a225e58fca08b581"
+    },
+    {
+      "path": "demo/case_202/07_technical_team.pdf",
+      "bytes": 95483,
+      "sha256": "42b19296dda301e337eeb09d0e5b9c6ca1367bbefcfdc87e781bbc1541363f9e"
+    },
+    {
+      "path": "demo/case_202/08_financial_offer.pdf",
+      "bytes": 94329,
+      "sha256": "6c383e6041daedce8b5ddb37a2581cf9ca789cde06d1f1296e2bc4664d6cb494"
+    },
+    {
+      "path": "demo/case_202/report.json",
+      "bytes": 40593,
+      "sha256": "eacd86d129224decffca01c72357a59edf07d0b5c950981bb2ddbeff66b533eb"
+    },
+    {
+      "path": "demo/case_202/requirements_ar.pdf",
+      "bytes": 118567,
+      "sha256": "0f1f1478518b524bb59ef0259c645b7ae5f5663c9212509844f76f5506a4ae36"
+    },
+    {
+      "path": "demo/case_303/01_company_profile.pdf",
+      "bytes": 96661,
+      "sha256": "1c051b6b1a57b6ef1b25f9dc557e9290f9dc921099fe111fc17e321dc958cdd6"
+    },
+    {
+      "path": "demo/case_303/02_activity_license.pdf",
+      "bytes": 93699,
+      "sha256": "00f8c93ff58019f2693c766e82fcd510f3f5442a590fdb68f0e1be003ae56bd1"
+    },
+    {
+      "path": "demo/case_303/04_previous_work.pdf",
+      "bytes": 107832,
+      "sha256": "0f721f19aa6ffe430402518f2691dd1f64a8fafa4df0538c408972c768ae2410"
+    },
+    {
+      "path": "demo/case_303/06_service_commitment.pdf",
+      "bytes": 95062,
+      "sha256": "3e894dbaed602669be319fbe1118b2733ec5066e55e79f4e5d3a359cc67b5181"
+    },
+    {
+      "path": "demo/case_303/07_technical_team.pdf",
+      "bytes": 95705,
+      "sha256": "fdd4a7ea2a99b99f4607fd6c7522d7ab700cb88d5933a5488ad0df15d13b9b7c"
+    },
+    {
+      "path": "demo/case_303/08_financial_offer.pdf",
+      "bytes": 94344,
+      "sha256": "6c2ce991218e30fb549323a82ae6e9f4c1f6185aeba8224d215b1638d17b271b"
+    },
+    {
+      "path": "demo/case_303/report.json",
+      "bytes": 39033,
+      "sha256": "cc9b954e2e7ec444903c02ae6a5ee5914f27b25b5f5308462293a10a6029e101"
+    },
+    {
+      "path": "demo/case_303/requirements_ar.pdf",
+      "bytes": 118567,
+      "sha256": "0f1f1478518b524bb59ef0259c645b7ae5f5663c9212509844f76f5506a4ae36"
+    },
+    {
+      "path": "demo/manifest.json",
+      "bytes": 1693,
+      "sha256": "406967ee67255aaeefd23a4181810b2ca851e38a8eb3935850bc491306a0fccb"
+    },
+    {
+      "path": "docker-compose.ai.yml",
+      "bytes": 317,
+      "sha256": "f326e6bfdc9130791201c71dc9fab1df973f13c5097ac8ea9b68a2e5a7efee72"
+    },
+    {
+      "path": "docker-compose.yml",
+      "bytes": 1662,
+      "sha256": "233c70ac39b19a7c1e237f491501dcd5ff28967989c5519cfc10d02ccad51975"
+    },
+    {
+      "path": "Dockerfile",
+      "bytes": 977,
+      "sha256": "0926b8b3ce583d23e40827ee67cd2f7721caf71d7f9fd763b184b3cc6bcdb7d9"
+    },
+    {
+      "path": "docs/benchmark/case_101-R02.json",
+      "bytes": 2909,
+      "sha256": "06cd733c34f125e6365bfcc5647097fbe50e1c43ef7554ab0eb61dce1d962513"
+    },
+    {
+      "path": "docs/benchmark/comparison.csv",
+      "bytes": 434,
+      "sha256": "66bc30f6eeb5ceed9a2823a97c6c2113355c1f7f91e8b8ce912eedf602c2b657"
+    },
+    {
+      "path": "docs/benchmark/comparison.json",
+      "bytes": 1873,
+      "sha256": "9438de78d2851b22f443ca0e0b0dabf6c7f42fb34676f86ace8b17d77e7d3c41"
+    },
+    {
+      "path": "docs/benchmark/provider-failure-diagnosis.json",
+      "bytes": 487,
+      "sha256": "194a7263e4b1f7301fc2b3e4cacecced3bdbfe85cfb4431c4632cff38cd6e47e"
+    },
+    {
+      "path": "docs/DEMO_REHEARSAL.md",
+      "bytes": 12995,
+      "sha256": "3e861a96a941e61736607b1af46f96dd2af7104ac661c1f3108760812a84bc0b"
+    },
+    {
+      "path": "docs/evidence/case_101-final-evidence.png",
+      "bytes": 90463,
+      "sha256": "7259e51ebed8edc841df038262927e715a590d9e9f06d75201bb1c669e431311"
+    },
+    {
+      "path": "docs/evidence/case_202-final-evidence.png",
+      "bytes": 80909,
+      "sha256": "5535ffeafea5b23934a82b33dcfc19d0c5108975cdcf553a65041a9cd2f453ea"
+    },
+    {
+      "path": "docs/evidence/case_303-final-evidence.png",
+      "bytes": 88117,
+      "sha256": "0e05061d2fbdab73146d26f2f95f84ca6d20b46e2576125868cbd2fda267404d"
+    },
+    {
+      "path": "docs/evidence/final-verification.json",
+      "bytes": 2365,
+      "sha256": "b6724358770feb6a261211f0c2460d2acc242614cfc8ee928e4b5f758fc5b89c"
+    },
+    {
+      "path": "docs/evidence/previous-case_101-evidence.png",
+      "bytes": 90463,
+      "sha256": "7259e51ebed8edc841df038262927e715a590d9e9f06d75201bb1c669e431311"
+    },
+    {
+      "path": "docs/evidence/previous-case_202-evidence.png",
+      "bytes": 80909,
+      "sha256": "5535ffeafea5b23934a82b33dcfc19d0c5108975cdcf553a65041a9cd2f453ea"
+    },
+    {
+      "path": "docs/evidence/previous-case_303-evidence.png",
+      "bytes": 88117,
+      "sha256": "0e05061d2fbdab73146d26f2f95f84ca6d20b46e2576125868cbd2fda267404d"
+    },
+    {
+      "path": "docs/evidence/previous-real-ai-acceptance.json",
+      "bytes": 1907,
+      "sha256": "a469c7fde87c4d36679a338811a60bd8c4179e58b198e194c4d674d233f544b8"
+    },
+    {
+      "path": "docs/evidence/previous-real-ai-case_101.json",
+      "bytes": 54022,
+      "sha256": "9fe40bc0626727fe2e1f25946edf7d5022c97e9ca656132e1d42283700f77607"
+    },
+    {
+      "path": "docs/source-file-hashes.json",
+      "bytes": 8496,
+      "sha256": "6033adf8bf9702f877962756e016b8e4f648aa3b3ea4312d2f07a2d418df328e"
+    },
+    {
+      "path": "docs/TENDERPROOF_BENCHMARK_FINAL_REPORT.md",
+      "bytes": 5276,
+      "sha256": "f4aea718f0103c4c2ec21a54c30d73012333adac5fa093377718d2ed9186be33"
+    },
+    {
+      "path": "llm_client.py",
+      "bytes": 814,
+      "sha256": "1c7822d1d9cc91a1b3058d76f39892588062856fed4ae55b66387e5f94bfda41"
+    },
+    {
+      "path": "models.py",
+      "bytes": 3969,
+      "sha256": "2c101cae2f96889af23770eecdfc5991345dda645448a47a62cfc23e11b45353"
+    },
+    {
+      "path": "openai_adapter.py",
+      "bytes": 1681,
+      "sha256": "a8735a247f0955cd0ba76f5ddafc0e6a617a05ff4c3b8e770208145b8e09555d"
+    },
+    {
+      "path": "orchestrator.py",
+      "bytes": 6915,
+      "sha256": "381ec085a4be0cd08a657e061133b7b574d3b89ee2d53e5a1b3126e2935845e5"
+    },
+    {
+      "path": "pdf_reader.py",
+      "bytes": 9091,
+      "sha256": "80c4349b9f2e47920589b75e26206f440e629c6a2e7bdf20801ad2c2f9a8a969"
+    },
+    {
+      "path": "README.md",
+      "bytes": 13639,
+      "sha256": "eba374971ed26900a99712065b0cc0c11c1622ff6908f4041f6b635d8e738df5"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 374,
+      "sha256": "1a6b6712e1bcf27ad661109dbd9ceb5e0db682533ccfcacbf3f694314445947b"
+    },
+    {
+      "path": "START_REAL_AI.bat",
+      "bytes": 167,
+      "sha256": "36baaf83bebe0c0ada391fe70e4dfcbad83ea088560d6ac5c735c957a6d60880"
+    },
+    {
+      "path": "START_TENDERPROOF.bat",
+      "bytes": 4579,
+      "sha256": "2d32e65ef5210dbf7225030f15d99e87c4071c12dda1461ccbfaac0b8d3eb97b"
+    },
+    {
+      "path": "STOP_TENDERPROOF.bat",
+      "bytes": 1208,
+      "sha256": "adf31ea489f343eec91875091185d9f4343830591024ef1fc9536392c2022441"
+    },
+    {
+      "path": "validation.py",
+      "bytes": 22933,
+      "sha256": "6e6eff96ea75ef8e1ab4832a60f92d2f13f151bc26c4568727c6dd2b09646382"
+    },
+    {
+      "path": "web/.env.example",
+      "bytes": 271,
+      "sha256": "fbbe4432f438bcbaf991623f360d2ff136a7ab39b15447228b84091a78e0b346"
+    },
+    {
+      "path": "web/api.py",
+      "bytes": 17264,
+      "sha256": "bb56a3582b5a9cae3bcf51750364652d72e010d5f51c7dc32b5350140a9fcd11"
+    },
+    {
+      "path": "web/app.py",
+      "bytes": 22964,
+      "sha256": "c1e98035dc2992f4fec11d24b1827a3891e8d03b52a901b44f81a96b0f6bbce1"
+    },
+    {
+      "path": "web/requirements.txt",
+      "bytes": 137,
+      "sha256": "bfefb796def7e8e83f42b5d8cd1c62a447a9cbfa2224ece1ab701a1c83e3dbd5"
+    },
+    {
+      "path": "web/ui.css",
+      "bytes": 10346,
+      "sha256": "b91861ed0a2e9319848cf416611e46e38de37f821f1c56c84b2b00f87216f431"
+    }
+  ],
+  "ux_review": "Passed Desktop/Mobile functional checks; saved provenance remains visible, input panel clarified, completeness warning explicit. External ZIP not refreshed.",
+  "git_release_branch": "release/tenderproof-final",
+  "git_base_commit": "186dbeb35b80e2beb84b1f7ba1281d5a45a88284"
+}

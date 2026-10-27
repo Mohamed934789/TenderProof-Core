@@ -1,0 +1,3 @@
+﻿model,completed_shared,example_count,labelled_count,error_count,json_validity_rate,latency_mean_seconds,citation_count,valid_citation_count,citation_accuracy,accuracy_labelled,label_class_count,supported_macro_precision,supported_macro_recall,supported_macro_f1
+gpt_reused,16,16,16,0,1.0,7.685321068747726,129,129,1.0,1.0,2,1.0,1.0,1.0
+nemotron,16,16,16,0,1.0,35.66988454375314,89,89,1.0,0.9375,2,1.0,0.95,0.9736842105263158

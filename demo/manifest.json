@@ -1,0 +1,48 @@
+{
+  "case_101": {
+    "title": "case_101",
+    "label": "تقرير قبول OpenAI محفوظ سابقًا",
+    "report": "case_101/report.json",
+    "tender": "case_101/requirements_ar.pdf",
+    "company": [
+      "case_101/01_company_profile.pdf",
+      "case_101/02_activity_license.pdf",
+      "case_101/03_tax_statement.pdf",
+      "case_101/04_previous_work.pdf",
+      "case_101/05_maintenance_authorization.pdf",
+      "case_101/06_service_commitment.pdf",
+      "case_101/07_technical_team.pdf",
+      "case_101/08_financial_offer.pdf"
+    ]
+  },
+  "case_202": {
+    "title": "case_202",
+    "label": "تقرير Replay محلي محفوظ — ليس استدعاء OpenAI جديدًا",
+    "report": "case_202/report.json",
+    "tender": "case_202/requirements_ar.pdf",
+    "company": [
+      "case_202/01_company_profile.pdf",
+      "case_202/02_activity_license.pdf",
+      "case_202/03_tax_statement.pdf",
+      "case_202/04_previous_work.pdf",
+      "case_202/05_maintenance_authorization.pdf",
+      "case_202/06_service_commitment.pdf",
+      "case_202/07_technical_team.pdf",
+      "case_202/08_financial_offer.pdf"
+    ]
+  },
+  "case_303": {
+    "title": "case_303",
+    "label": "تقرير Replay محلي محفوظ — ليس استدعاء OpenAI جديدًا",
+    "report": "case_303/report.json",
+    "tender": "case_303/requirements_ar.pdf",
+    "company": [
+      "case_303/01_company_profile.pdf",
+      "case_303/02_activity_license.pdf",
+      "case_303/04_previous_work.pdf",
+      "case_303/06_service_commitment.pdf",
+      "case_303/07_technical_team.pdf",
+      "case_303/08_financial_offer.pdf"
+    ]
+  }
+}

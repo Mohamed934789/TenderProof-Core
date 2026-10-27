@@ -38,3 +38,14 @@ practice_*.py
 tests/fixtures/ida-335.pdf
 agent2_integration_result.json
 agent2_pdf_debug.txt
+
+# Final delivery secrets and generated files
+.env
+.env.*
+!.env.example
+.secrets/
+runtime/
+.venv/
+__pycache__/
+*.pyc
+*.log

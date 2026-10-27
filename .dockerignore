@@ -1,0 +1,23 @@
+# Deny by default: never send keys, .env, PDFs, reports, runtime, Git, or venv to Docker.
+**
+!Dockerfile
+!requirements.txt
+!agent1.py
+!agent2.py
+!agent2_schema.py
+!agent3.py
+!llm_client.py
+!models.py
+!openai_adapter.py
+!orchestrator.py
+!pdf_reader.py
+!validation.py
+!web/
+web/**
+!web/requirements.txt
+!web/api.py
+!web/app.py
+!web/ui.css
+!.streamlit/
+.streamlit/**
+!.streamlit/config.toml

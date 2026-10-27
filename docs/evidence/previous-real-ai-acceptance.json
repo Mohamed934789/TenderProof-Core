@@ -1,0 +1,75 @@
+{
+  "result": "PASS",
+  "request_id": "30d04da9428d4a97b3a4fb026c95e670",
+  "kind": "LIVE_AI",
+  "new_analysis": true,
+  "case": "case_101",
+  "reference_date": "2026-10-31",
+  "source_pdf_count": 9,
+  "generation_api_calls": 3,
+  "token_count_api_calls": 3,
+  "total_openai_api_requests": 6,
+  "automatic_retries": 0,
+  "model_ids": [
+    "gpt-6-luna",
+    "gpt-6-luna",
+    "gpt-6-luna"
+  ],
+  "input_tokens": 21658,
+  "output_tokens": 6592,
+  "estimated_cost_usd_low": 0.006003025,
+  "estimated_cost_usd_high": 0.00870915,
+  "reserved_max_usd": 0.047693,
+  "invoice_cost": "not independently available",
+  "status_counts": {
+    "SATISFIED": 12,
+    "CONTRADICTED": 0,
+    "MISSING_EVIDENCE": 0,
+    "NEEDS_REVIEW": 3
+  },
+  "citation_validation": "PASS",
+  "citation_occurrences_checked": 139,
+  "unique_citations_checked": 99,
+  "original_validate_report": "PASS",
+  "protected_core_and_ui_unchanged": true,
+  "downloaded_json_matches": true,
+  "paid_gate_enabled_after_attempt": false,
+  "needs_review": [
+    {
+      "target_id": "BOQ-1",
+      "reasons": [
+        "The extracted target requires review before evidence can be decided."
+      ]
+    },
+    {
+      "target_id": "BOQ-2",
+      "reasons": [
+        "The extracted target requires review before evidence can be decided."
+      ]
+    },
+    {
+      "target_id": "BOQ-3",
+      "reasons": [
+        "The extracted target requires review before evidence can be decided."
+      ]
+    }
+  ],
+  "boq_quantities": [
+    {
+      "id": "BOQ-1",
+      "value": "12",
+      "raw": "١٢ جهاز Xerox"
+    },
+    {
+      "id": "BOQ-2",
+      "value": "8",
+      "raw": "٨ أجهزة Canon"
+    },
+    {
+      "id": "BOQ-3",
+      "value": "2",
+      "raw": "جهازي Plotter"
+    }
+  ],
+  "pricing_reference": "https://developers.openai.com/api/docs/models/gpt-6-luna"
+}

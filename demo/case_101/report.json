@@ -1,0 +1,1006 @@
+{
+  "schema_version": "core-draft-0.2",
+  "mode": "AI",
+  "reference_date": "2026-10-31",
+  "documents": [
+    {
+      "document_id": "tender-001",
+      "filename": "requirements_ar.pdf",
+      "role": "TENDER",
+      "completeness": "UNKNOWN",
+      "completeness_basis": "UNKNOWN",
+      "warnings": []
+    },
+    {
+      "document_id": "company-001",
+      "filename": "01_company_profile.pdf",
+      "role": "COMPANY",
+      "completeness": "UNKNOWN",
+      "completeness_basis": "UNKNOWN",
+      "warnings": []
+    },
+    {
+      "document_id": "company-002",
+      "filename": "02_activity_license.pdf",
+      "role": "COMPANY",
+      "completeness": "UNKNOWN",
+      "completeness_basis": "UNKNOWN",
+      "warnings": []
+    },
+    {
+      "document_id": "company-003",
+      "filename": "03_tax_statement.pdf",
+      "role": "COMPANY",
+      "completeness": "UNKNOWN",
+      "completeness_basis": "UNKNOWN",
+      "warnings": []
+    },
+    {
+      "document_id": "company-004",
+      "filename": "04_previous_work.pdf",
+      "role": "COMPANY",
+      "completeness": "UNKNOWN",
+      "completeness_basis": "UNKNOWN",
+      "warnings": []
+    },
+    {
+      "document_id": "company-005",
+      "filename": "05_maintenance_authorization.pdf",
+      "role": "COMPANY",
+      "completeness": "UNKNOWN",
+      "completeness_basis": "UNKNOWN",
+      "warnings": []
+    },
+    {
+      "document_id": "company-006",
+      "filename": "06_service_commitment.pdf",
+      "role": "COMPANY",
+      "completeness": "UNKNOWN",
+      "completeness_basis": "UNKNOWN",
+      "warnings": []
+    },
+    {
+      "document_id": "company-007",
+      "filename": "07_technical_team.pdf",
+      "role": "COMPANY",
+      "completeness": "UNKNOWN",
+      "completeness_basis": "UNKNOWN",
+      "warnings": []
+    },
+    {
+      "document_id": "company-008",
+      "filename": "08_financial_offer.pdf",
+      "role": "COMPANY",
+      "completeness": "UNKNOWN",
+      "completeness_basis": "UNKNOWN",
+      "warnings": []
+    }
+  ],
+  "eligibility": {
+    "requirements": [
+      {
+        "requirement_id": "R01",
+        "text": "يجب أن يثبت ملف الشركة اسم مقدم العرض ومعرّفه التجريبي الموحد ونشاط صيانة أجهزة المكاتب، مع اتساق الاسم والمعرّف في جميع المستندات المقدمة. لا ينص النص صراحةً على وجوب تقديم مستخرج سجل تجاري.",
+        "category": "REGISTRATION",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": "R01 |   هوية الشركة ونطاق النشاط"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": " يجب أن يثبت ملف الشركة اسم مقدم العرض ومعرّفه التجريبي الموحد ونشاط صيانة أجهزة المكاتب، مع"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": " اتساق الاسم والمعرّف في جميع المستندات المقدمة."
+          }
+        ]
+      },
+      {
+        "requirement_id": "R02",
+        "text": "يجب تقديم بيان ترخيص النشاط متضمناً تاريخي الإصدار والانتهاء صراحةً، وأن يكون سارياً في تاريخ الإقفال المحدد في ٣١ أكتوبر ٢٠٢٦.",
+        "category": "LICENSE",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": "R02 |   سريان ترخيص النشاط"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": " يجب تقديم بيان ترخيص نشاط يتضمن تاريخ إصدار وتاريخ انتهاء صريحين، ويكون ساريًا في تاريخ الإقفال"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": " المحدد في ٣١ أكتوبر ٢٠٢٦."
+          }
+        ]
+      },
+      {
+        "requirement_id": "R03",
+        "text": "يجب تقديم بيان موقف ضريبي باسم مقدم العرض ومعرّفه، سارٍ في تاريخ الإقفال، وينص صراحةً على عدم وجود متأخرات ضريبية واجبة الأداء.",
+        "category": "ADMINISTRATIVE",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": "R03 |   الموقف الضريبي"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": " يجب تقديم بيان موقف ضريبي ساري في تاريخ الإقفال، باسم مقدم العرض ومعرّفه، وينص صراحة على"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": " عدم وجود متأخرات ضريبية واجبة الأداء."
+          }
+        ]
+      },
+      {
+        "requirement_id": "R04",
+        "text": "يجب إثبات عمليتي صيانة مكتملتين على الأقل، كل منهما لعشرة أجهزة أو أكثر، مع بيان العميل وعدد الأجهزة وتاريخ الاستلام النهائي. يجب أن يقع تاريخ الاستلام بين ١ نوفمبر ٢٠٢٣ و٣١ أكتوبر ٢٠٢٦ شاملًا.",
+        "category": "EXPERIENCE",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": "R04 |   سابقة الأعمال المقبولة"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": " يجب إثبات عمليتي صيانة مكتملتين على الأقل، كل منهما لعشرة أجهزة أو أكثر، مع بيان العميل وعدد"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": " الأجهزة وتاريخ الاستلام النهائي. يجب أن يقع تاريخ الاستلام بين ١ نوفمبر ٢٠٢٣ و٣١ أكتوبر ٢٠٢٦، شاملاً"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": " الحدين."
+          }
+        ]
+      },
+      {
+        "requirement_id": "R05",
+        "text": "يجب تقديم تفويض صيانة باسم مقدم العرض يشمل Xerox وCanon صراحةً، ويبين جهة الإصدار وفترة السريان، ويكون سارياً في تاريخ الإقفال. النص يوضح أن تفويض Plotter وحده لا يكفي.",
+        "category": "LICENSE",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": "R05 |   تفويض الصيانة للعلامات المطلوبة"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": " يجب تقديم تفويض صيانة باسم مقدم العرض يشمل Xerox وCanon  صراحة، ويبين جهة الإصدار وفترة"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": " السريان، على أن يكون ساريًا في تاريخ الإقفال. تفويض Plotter  وحده لا يكفي."
+          }
+        ]
+      },
+      {
+        "requirement_id": "R07",
+        "text": "يجب تخصيص ثلاثة مهندسين على الأقل، مع بيان أسمائهم وأدوارهم، وأن تكون لقائد الفريق خبرة لا تقل عن خمس سنوات في صيانة أجهزة المكاتب.",
+        "category": "EXPERIENCE",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": "R07 |   الفريق الفني"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " يجب تخصيص ثلاثة مهندسين على الأقل، مع بيان أسمائهم وأدوارهم، وتحديد قائد فريق لديه خبرة لا تقل عن"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " ٥ سنوات في صيانة أجهزة المكاتب."
+          }
+        ]
+      },
+      {
+        "requirement_id": "R08",
+        "text": "يجب أن يتضمن العرض المالي أسعار صيانة ١٢ جهاز Xerox و٨ أجهزة Canon وجهازي Plotter لمدة سنة بالجنيه المصري، مع سعر الوحدة السنوي وإجمالي كل بند، وأن تتسق مجاميع البنود والضريبة والإجمالي النهائي. نسبة الضريبة الافتراضية ١٤٪ مذكورة لأغراض الاختبار الحسابي فقط.",
+        "category": "FINANCIAL",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": "R08 |   اكتمال العرض المالي واتساقه"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " يجب تسعير صيانة ١٢ جهاز Xerox  و٨ أجهزة Canon  وجهازي Plotter  لمدة سنة بالجنيه المصري، مع سعر"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " الوحدة السنوي وإجمالي كل بند. تستخدم نسبة ضريبة افتراضية قدرها ١٤٪ لأغراض الاختبار الحسابي فقط."
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " يجب اتساق مجموع البنود والضريبة والإجمالي النهائي."
+          }
+        ]
+      },
+      {
+        "requirement_id": "R09",
+        "text": "يجب أن ينص العرض المالي صراحةً على سريانه لمدة لا تقل عن ٩٠ يوماً تبدأ من تاريخ الإقفال المحدد في ٣١ أكتوبر ٢٠٢٦.",
+        "category": "FINANCIAL",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": "R09 |   مدة سريان العرض"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " يجب أن ينص العرض المالي صراحة على سريانه لمدة لا تقل عن ٩٠ يومًا تبدأ من تاريخ الإقفال المحدد في"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " ٣١ أكتوبر ٢٠٢٦."
+          }
+        ]
+      }
+    ],
+    "warnings": [
+      "Full readable tender coverage is not confirmed."
+    ],
+    "provenance": {
+      "mode": "AI",
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "prompt_version": "agent1-line-references-v4"
+    }
+  },
+  "technical": {
+    "boq_status": "NEEDS_REVIEW",
+    "boq_review_reasons": [
+      "اكتمال المستند غير مؤكد؛ الصفحات المتاحة مقروءة لكن لا يتأكد أنها تمثل المستند كاملًا.",
+      "Full tender coverage has not been confirmed.",
+      "One or more BOQ items require review."
+    ],
+    "boq_items": [
+      {
+        "boq_item_id": "BOQ-001",
+        "description": "صيانة أجهزة Xerox",
+        "quantity": {
+          "raw_text": "١٢ جهاز Xerox",
+          "decimal_value": "12",
+          "sources": [
+            {
+              "document_id": "tender-001",
+              "pdf_page": 3,
+              "quote": " يجب تسعير صيانة ١٢ جهاز Xerox  و٨ أجهزة Canon  وجهازي Plotter  لمدة سنة بالجنيه المصري، مع سعر"
+            }
+          ]
+        },
+        "unit": "جهاز",
+        "unit_normalized": "جهاز",
+        "table_id": null,
+        "needs_review": true,
+        "review_reasons": [
+          "The cited quantity, PDF text or table structure has extraction uncertainty."
+        ],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " يجب تسعير صيانة ١٢ جهاز Xerox  و٨ أجهزة Canon  وجهازي Plotter  لمدة سنة بالجنيه المصري، مع سعر"
+          }
+        ]
+      },
+      {
+        "boq_item_id": "BOQ-002",
+        "description": "صيانة أجهزة Canon",
+        "quantity": {
+          "raw_text": "٨ أجهزة Canon",
+          "decimal_value": "8",
+          "sources": [
+            {
+              "document_id": "tender-001",
+              "pdf_page": 3,
+              "quote": " يجب تسعير صيانة ١٢ جهاز Xerox  و٨ أجهزة Canon  وجهازي Plotter  لمدة سنة بالجنيه المصري، مع سعر"
+            }
+          ]
+        },
+        "unit": "جهاز",
+        "unit_normalized": "جهاز",
+        "table_id": null,
+        "needs_review": true,
+        "review_reasons": [
+          "The cited quantity, PDF text or table structure has extraction uncertainty."
+        ],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " يجب تسعير صيانة ١٢ جهاز Xerox  و٨ أجهزة Canon  وجهازي Plotter  لمدة سنة بالجنيه المصري، مع سعر"
+          }
+        ]
+      },
+      {
+        "boq_item_id": "BOQ-003",
+        "description": "صيانة أجهزة Plotter",
+        "quantity": {
+          "raw_text": "جهازي Plotter",
+          "decimal_value": "2",
+          "sources": [
+            {
+              "document_id": "tender-001",
+              "pdf_page": 3,
+              "quote": " يجب تسعير صيانة ١٢ جهاز Xerox  و٨ أجهزة Canon  وجهازي Plotter  لمدة سنة بالجنيه المصري، مع سعر"
+            }
+          ]
+        },
+        "unit": "جهاز",
+        "unit_normalized": "جهاز",
+        "table_id": null,
+        "needs_review": true,
+        "review_reasons": [
+          "The cited quantity, PDF text or table structure has extraction uncertainty."
+        ],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " يجب تسعير صيانة ١٢ جهاز Xerox  و٨ أجهزة Canon  وجهازي Plotter  لمدة سنة بالجنيه المصري، مع سعر"
+          }
+        ]
+      }
+    ],
+    "technical_requirements": [
+      {
+        "technical_id": "TECH-001",
+        "text": "مدة الصيانة سنة، من ١ نوفمبر ٢٠٢٦ إلى ٣١ أكتوبر ٢٠٢٧.",
+        "category": "EXECUTION_DEADLINE",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": " موضوع العملية: صيانة أجهزة الطباعة والتصوير والرسم الهندسي لمدة سنة من ١ نوفمبر ٢٠٢٦ إلى ٣١"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 1,
+            "quote": " أكتوبر ٢٠٢٧. الجهة الطالبة: مركز الأعمال الافتراضي للمحاكاة."
+          }
+        ]
+      },
+      {
+        "technical_id": "TECH-002",
+        "text": "الاستجابة الفنية خلال مدة لا تتجاوز ٤ ساعات، وإعادة الجهاز إلى الخدمة خلال مدة لا تتجاوز ٢٤ ساعة من تسجيل البلاغ، طوال أيام الأسبوع. يشمل المقابل قطع الغيار اللازمة، ولا تُربط مدة الإصلاح بتوافرها.",
+        "category": "SPECIFICATION",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": " يجب التعهد باستجابة فنية خلال مدة لا تتجاوز ٤ ساعات، وإعادة الجهاز إلى الخدمة خلال مدة لا تتجاوز ٢٤"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": " ساعة من تسجيل البلاغ، طوال أيام الأسبوع. يشمل المقابل قطع الغيار اللازمة، ولا يقبل ربط مدة الإصلاح"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 2,
+            "quote": " بتوافرها."
+          }
+        ]
+      },
+      {
+        "technical_id": "TECH-003",
+        "text": "تخصيص ثلاثة مهندسين على الأقل، مع بيان أسمائهم وأدوارهم، وتحديد قائد فريق لديه خبرة لا تقل عن ٥ سنوات في صيانة أجهزة المكاتب.",
+        "category": "SPECIFICATION",
+        "needs_review": false,
+        "review_reasons": [],
+        "sources": [
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " يجب تخصيص ثلاثة مهندسين على الأقل، مع بيان أسمائهم وأدوارهم، وتحديد قائد فريق لديه خبرة لا تقل عن"
+          },
+          {
+            "document_id": "tender-001",
+            "pdf_page": 3,
+            "quote": " ٥ سنوات في صيانة أجهزة المكاتب."
+          }
+        ]
+      }
+    ],
+    "provenance": {
+      "mode": "AI",
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "prompt_version": "agent2-line-references-v5"
+    },
+    "warnings": [
+      "Table structure is unverified on pages: [1, 2, 3].",
+      "Tender completeness is not confirmed."
+    ]
+  },
+  "findings": [
+    {
+      "target_type": "ELIGIBILITY",
+      "target_id": "R01",
+      "status": "SATISFIED",
+      "explanation": "تثبت المستندات اسم الشركة ومعرّفها التجريبي TEST-ORG-001 على نحو متسق، ويبين ملف الشركة نشاط توريد وصيانة أجهزة الطباعة والتصوير والمسح والرسم الهندسي. الأدلة المقدمة متوافقة مع نطاق النشاط المطلوب.",
+      "evidence": [
+        {
+          "document_id": "company-001",
+          "pdf_page": 1,
+          "quote": " الاسم العربي: نايل لخدمات تكنولوجيا المكاتب. الاسم الفني باللغة الإنجليزية: Nile Oﬃce T echnology"
+        },
+        {
+          "document_id": "company-001",
+          "pdf_page": 1,
+          "quote": " معرّف الكيان التجريبي: TEST-ORG-001.   تاريخ بدء النشاط: ١ يناير ٢٠١٨. المقر: القاهرة، حي الأعمال"
+        },
+        {
+          "document_id": "company-001",
+          "pdf_page": 1,
+          "quote": " النشاط: توريد وصيانة أجهزة الطباعة والتصوير والمسح الضوئي وأجهزة الرسم الهندسي، وتقديم الدعم"
+        },
+        {
+          "document_id": "company-001",
+          "pdf_page": 1,
+          "quote": " الفني داخل مقار العملاء."
+        },
+        {
+          "document_id": "company-002",
+          "pdf_page": 1,
+          "quote": " صاحب البيان: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-003",
+          "pdf_page": 1,
+          "quote": " اسم المنشأة: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 1,
+          "quote": " مقدم البيان: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 2,
+          "quote": " مقدم البيان: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-005",
+          "pdf_page": 1,
+          "quote": " الشركة المفوضة: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-006",
+          "pdf_page": 1,
+          "quote": " مقدم التعهد: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001.   مرجع التعهد:"
+        },
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " اسم الشركة: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001.   مرجع البيان:"
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " مقدم العرض: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001.   مرجع العرض:"
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "ELIGIBILITY",
+      "target_id": "R02",
+      "status": "SATISFIED",
+      "explanation": "بيان الترخيص يخص الشركة ومعرّفها، ويشمل نشاط صيانة أجهزة الطباعة والتصوير والمسح والرسم الهندسي، ويذكر تاريخي الإصدار والانتهاء صراحة. تاريخ الانتهاء ٣١ ديسمبر ٢٠٢٧، ولذلك يظهر البيان سارياً في تاريخ الإقفال المحدد.",
+      "evidence": [
+        {
+          "document_id": "company-002",
+          "pdf_page": 1,
+          "quote": " جهة الإصدار الافتراضية: إدارة تراخيص الأنشطة التجريبية. نوع البيان: إثبات ترخيص نشاط ضمن بيئة اختبار"
+        },
+        {
+          "document_id": "company-002",
+          "pdf_page": 1,
+          "quote": " صاحب البيان: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-002",
+          "pdf_page": 1,
+          "quote": " النشاط المصرح به في المحاكاة: توريد وصيانة أجهزة الطباعة والتصوير والمسح الضوئي وأجهزة الرسم"
+        },
+        {
+          "document_id": "company-002",
+          "pdf_page": 1,
+          "quote": " الهندسي داخل مقار العملاء."
+        },
+        {
+          "document_id": "company-002",
+          "pdf_page": 1,
+          "quote": " تاريخ الإصدار: ١ يناير ٢٠٢٦. تاريخ انتهاء السريان: ٣١ ديسمبر ٢٠٢٧."
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "ELIGIBILITY",
+      "target_id": "R03",
+      "status": "SATISFIED",
+      "explanation": "بيان الموقف الضريبي مرتبط باسم الشركة ومعرّفها، ويحدد انتهاء سريانه في ٣١ ديسمبر ٢٠٢٦، بعد تاريخ الإقفال. وينص صراحة على عدم وجود متأخرات ضريبية واجبة الأداء، مع رصيد مستحق قدره صفر.",
+      "evidence": [
+        {
+          "document_id": "company-003",
+          "pdf_page": 1,
+          "quote": " اسم المنشأة: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-003",
+          "pdf_page": 1,
+          "quote": " تاريخ إصدار البيان: ١ يناير ٢٠٢٦. تاريخ انتهاء السريان: ٣١ ديسمبر ٢٠٢٦. تاريخ تحديث الموقف: ٢٠ أكتوبر"
+        },
+        {
+          "document_id": "company-003",
+          "pdf_page": 1,
+          "quote": ".٦٢٠٢"
+        },
+        {
+          "document_id": "company-003",
+          "pdf_page": 1,
+          "quote": " الموقف حتى تاريخ التحديث: لا توجد متأخرات ضريبية واجبة الأداء. رصيد المتأخرات المستحقة: صفر جنيه"
+        },
+        {
+          "document_id": "company-003",
+          "pdf_page": 1,
+          "quote": " مصري."
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "ELIGIBILITY",
+      "target_id": "R04",
+      "status": "SATISFIED",
+      "explanation": "يثبت البيان عمليتي صيانة مكتملتين لعميلين محددين: الأولى شملت ١٥ جهازاً وكان الاستلام النهائي في ١٥ يناير ٢٠٢٥، والثانية شملت ١٢ جهازاً وكان الاستلام النهائي في ١٠ مارس ٢٠٢٦. كلا التاريخين ضمن الفترة المطلوبة، والعمليتان تستوفيان حد الأجهزة.",
+      "evidence": [
+        {
+          "document_id": "company-004",
+          "pdf_page": 1,
+          "quote": " مقدم البيان: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 1,
+          "quote": " العملية الأولى: عقد صيانة أجهزة المكاتب لدى شركة مدار المحاكاة للخدمات الإدارية، وهي جهة عميل"
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 1,
+          "quote": " نطاق العقد: صيانة ١٥ جهازًا؛ منها ٩ أجهزة Xerox  و٦ أجهزة Canon ، مع خدمات Print وScan وCopy"
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 1,
+          "quote": " مدة التنفيذ: من ١ يناير ٢٠٢٤ إلى ٣١ ديسمبر ٢٠٢٤. تاريخ الاستلام النهائي: ١٥ يناير ٢٠٢٥."
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 1,
+          "quote": " حالة التنفيذ: مكتمل، وتم الاستلام النهائي دون ملاحظات تشغيلية معلقة. شملت الأعمال الزيارات الدورية"
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 2,
+          "quote": " مقدم البيان: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 2,
+          "quote": " العملية الثانية: عقد صيانة أجهزة الطباعة لدى شركة أفق المحاكاة للأعمال الهندسية، وهي جهة عميل"
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 2,
+          "quote": " نطاق العقد: صيانة ١٢ جهازًا؛ منها ٥ أجهزة Xerox  و٥ أجهزة Canon  وجهازي Plotter  للرسم الهندسي."
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 2,
+          "quote": " مدة التنفيذ: من ١ مارس ٢٠٢٥ إلى ٢٨ فبراير ٢٠٢٦. تاريخ الاستلام النهائي: ١٠ مارس ٢٠٢٦."
+        },
+        {
+          "document_id": "company-004",
+          "pdf_page": 2,
+          "quote": " حالة التنفيذ: مكتمل، وتم الاستلام النهائي دون ملاحظات تشغيلية معلقة. نفذت الصيانة في مقر العميل"
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "ELIGIBILITY",
+      "target_id": "R05",
+      "status": "SATISFIED",
+      "explanation": "يحدد التفويض جهة الإصدار والشركة المفوضة ومعرّفها، وينص صراحة على صيانة Xerox وCanon. كما يبين فترة السريان، التي تنتهي في ٣١ ديسمبر ٢٠٢٦، فتغطي تاريخ الإقفال. وبما أن المستندات ضمن المحاكاة المعلنة، فإن صفتها الافتراضية وحدها لا تنفي الدليل.",
+      "evidence": [
+        {
+          "document_id": "company-005",
+          "pdf_page": 1,
+          "quote": " الجهة المصدرة الافتراضية: المركز الافتراضي لتقنيات المكاتب. صفة الجهة داخل السيناريو: جهة إصدار"
+        },
+        {
+          "document_id": "company-005",
+          "pdf_page": 1,
+          "quote": " الشركة المفوضة: نايل لخدمات تكنولوجيا المكاتب. معرّف الكيان التجريبي: TEST-ORG-001."
+        },
+        {
+          "document_id": "company-005",
+          "pdf_page": 1,
+          "quote": " يشمل نطاق التفويض التجريبي صيانة أجهزة Xerox وCanon  صراحة، بما في ذلك الفحص الدوري والإصلاح"
+        },
+        {
+          "document_id": "company-005",
+          "pdf_page": 1,
+          "quote": " واستبدال قطع الغيار."
+        },
+        {
+          "document_id": "company-005",
+          "pdf_page": 1,
+          "quote": " تاريخ بدء السريان: ١ يناير ٢٠٢٦. تاريخ انتهاء السريان: ٣١ ديسمبر ٢٠٢٦. تاريخ تحرير النسخة: ٢٠ أكتوبر"
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "ELIGIBILITY",
+      "target_id": "R07",
+      "status": "SATISFIED",
+      "explanation": "يبين بيان الفريق أسماء ثلاثة مهندسين وأدوارهم، ويذكر تخصيصهم للأعمال وإجمالي الفريق. قائد الفريق مهندس صيانة أجهزة مكاتب بخبرة سبع سنوات، بما يتجاوز الحد الأدنى المطلوب.",
+      "evidence": [
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " المهندس الأول: سامح محمود حسان. الدور: قائد الفريق ومهندس صيانة أجهزة مكاتب. الخبرة: ٧ سنوات"
+        },
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " مكتملة حتى تاريخ إعداد البيان."
+        },
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " المهندسة الثانية: هبة عادل فؤاد. الدور: مهندسة صيانة طباعة ومسح ضوئي. الخبرة: ٤ سنوات. التخصص:"
+        },
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " المهندس الثالث: عمر شريف كمال. الدور: مهندس صيانة أجهزة رسم هندسي وشبكات. الخبرة: ٣ سنوات."
+        },
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " إجمالي الفريق المخصص: ٣ مهندسين. توزيع العمل: قائد للإشراف الفني، ومهندسان للتدخل الميداني"
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "ELIGIBILITY",
+      "target_id": "R08",
+      "status": "SATISFIED",
+      "explanation": "العرض المالي يسعر البنود الثلاثة للمدة السنوية وبالجنيه المصري، مع كميات وأسعار وحدات سنوية وإجماليات لكل بند. مجموع البنود البالغ ٢٢٠٬٠٠٠ جنيه، والضريبة البالغة ٣٠٬٨٠٠ جنيه بنسبة ١٤٪، والإجمالي النهائي البالغ ٢٥٠٬٨٠٠ جنيه متسقة حسابياً.",
+      "evidence": [
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " فترة الخدمة: سنة من ١ نوفمبر ٢٠٢٦ إلى ٣١ أكتوبر ٢٠٢٧. العملة لجميع الأسعار: الجنيه المصري. سعر"
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " الوحدة المذكور أدناه هو المقابل السنوي للجهاز."
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " البند الأول: صيانة أجهزة Xerox.   الكمية: ١٢ جهازًا. سعر الوحدة السنوي: ٩٬٠٠٠ جنيه. إجمالي البند:"
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " ١٠٨٬٠٠٠ جنيه."
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " البند الثاني: صيانة أجهزة Canon.   الكمية: ٨ أجهزة. سعر الوحدة السنوي: ١٠٬٠٠٠ جنيه. إجمالي البند:"
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " ٨٠٬٠٠٠ جنيه."
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " البند الثالث: صيانة أجهزة Plotter.   الكمية: جهازان. سعر الوحدة السنوي: ١٦٬٠٠٠ جنيه. إجمالي البند:"
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " ٣٢٬٠٠٠ جنيه."
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " إجمالي البنود قبل الضريبة: ٢٢٠٬٠٠٠ جنيه. الضريبة الافتراضية بنسبة ١٤٪: ٣٠٬٨٠٠ جنيه. الإجمالي النهائي"
+        },
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " شامل الضريبة: ٢٥٠٬٨٠٠ جنيه."
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "ELIGIBILITY",
+      "target_id": "R09",
+      "status": "SATISFIED",
+      "explanation": "Explicit offer duration from the closing date meets the requirement.",
+      "evidence": [
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " يسري هذا العرض لمدة ٩٠ يومًا تبدأ من تاريخ الإقفال المحدد في ٣١ أكتوبر ٢٠٢٦. تاريخ تحرير العرض: ٢٠"
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "TECHNICAL",
+      "target_id": "TECH-001",
+      "status": "SATISFIED",
+      "explanation": "يتعهد مستند مستويات الخدمة بتغطية مدتها سنة من ١ نوفمبر ٢٠٢٦ إلى ٣١ أكتوبر ٢٠٢٧، وهي مدة التنفيذ المطلوبة.",
+      "evidence": [
+        {
+          "document_id": "company-006",
+          "pdf_page": 1,
+          "quote": " مدة التغطية: سنة من ١ نوفمبر ٢٠٢٦ إلى ٣١ أكتوبر ٢٠٢٧، لأجهزة Xerox وCanon وPlotter  المشمولة"
+        },
+        {
+          "document_id": "company-006",
+          "pdf_page": 1,
+          "quote": " بالعرض."
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "TECHNICAL",
+      "target_id": "TECH-002",
+      "status": "SATISFIED",
+      "explanation": "يتعهد المستند باستجابة فنية خلال أربع ساعات وإعادة الجهاز إلى الخدمة خلال ٢٤ ساعة من تسجيل البلاغ، طوال أيام الأسبوع بما فيها العطلات. ولا يوقف انتظار قطع الغيار احتساب المدة، كما يشمل المقابل قطع الغيار اللازمة دون تكلفة إضافية داخل نطاق الصيانة.",
+      "evidence": [
+        {
+          "document_id": "company-006",
+          "pdf_page": 1,
+          "quote": " زمن الاستجابة الفنية: خلال ٤ ساعات كحد أقصى من تسجيل البلاغ."
+        },
+        {
+          "document_id": "company-006",
+          "pdf_page": 1,
+          "quote": " زمن إعادة الجهاز إلى الخدمة: خلال ٢٤ ساعة كحد أقصى من تسجيل البلاغ."
+        },
+        {
+          "document_id": "company-006",
+          "pdf_page": 1,
+          "quote": " تسري المدد طوال أيام الأسبوع، بما فيها العطلات. يبدأ احتساب الوقت من تسجيل البلاغ في سجل الدعم"
+        },
+        {
+          "document_id": "company-006",
+          "pdf_page": 1,
+          "quote": " الفني، ولا يوقفه انتظار قطع الغيار."
+        },
+        {
+          "document_id": "company-006",
+          "pdf_page": 1,
+          "quote": " يشمل المقابل المتفق عليه قطع الغيار اللازمة وأعمال التركيب والاختبار والانتقال، ولا تطلب تكلفة إضافية"
+        },
+        {
+          "document_id": "company-006",
+          "pdf_page": 1,
+          "quote": " لهذه البنود داخل نطاق الصيانة."
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "TECHNICAL",
+      "target_id": "TECH-003",
+      "status": "SATISFIED",
+      "explanation": "يذكر البيان أسماء ثلاثة مهندسين وأدوارهم، ويحدد قائد الفريق بخبرة سبع سنوات في صيانة أجهزة المكاتب؛ وبذلك يدعم جميع عناصر متطلبات الفريق.",
+      "evidence": [
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " المهندس الأول: سامح محمود حسان. الدور: قائد الفريق ومهندس صيانة أجهزة مكاتب. الخبرة: ٧ سنوات"
+        },
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " مكتملة حتى تاريخ إعداد البيان."
+        },
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " المهندسة الثانية: هبة عادل فؤاد. الدور: مهندسة صيانة طباعة ومسح ضوئي. الخبرة: ٤ سنوات. التخصص:"
+        },
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " المهندس الثالث: عمر شريف كمال. الدور: مهندس صيانة أجهزة رسم هندسي وشبكات. الخبرة: ٣ سنوات."
+        },
+        {
+          "document_id": "company-007",
+          "pdf_page": 1,
+          "quote": " إجمالي الفريق المخصص: ٣ مهندسين. توزيع العمل: قائد للإشراف الفني، ومهندسان للتدخل الميداني"
+        }
+      ],
+      "review_required": false,
+      "uncertainty_reasons": []
+    },
+    {
+      "target_type": "BOQ",
+      "target_id": "BOQ-001",
+      "status": "NEEDS_REVIEW",
+      "explanation": "The extracted target requires review before evidence can be decided.",
+      "evidence": [
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " البند الأول: صيانة أجهزة Xerox.   الكمية: ١٢ جهازًا. سعر الوحدة السنوي: ٩٬٠٠٠ جنيه. إجمالي البند:"
+        }
+      ],
+      "review_required": true,
+      "uncertainty_reasons": [
+        "The extracted target requires review before evidence can be decided."
+      ]
+    },
+    {
+      "target_type": "BOQ",
+      "target_id": "BOQ-002",
+      "status": "NEEDS_REVIEW",
+      "explanation": "The extracted target requires review before evidence can be decided.",
+      "evidence": [
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " البند الثاني: صيانة أجهزة Canon.   الكمية: ٨ أجهزة. سعر الوحدة السنوي: ١٠٬٠٠٠ جنيه. إجمالي البند:"
+        }
+      ],
+      "review_required": true,
+      "uncertainty_reasons": [
+        "The extracted target requires review before evidence can be decided."
+      ]
+    },
+    {
+      "target_type": "BOQ",
+      "target_id": "BOQ-003",
+      "status": "NEEDS_REVIEW",
+      "explanation": "The extracted target requires review before evidence can be decided.",
+      "evidence": [
+        {
+          "document_id": "company-008",
+          "pdf_page": 1,
+          "quote": " البند الثالث: صيانة أجهزة Plotter.   الكمية: جهازان. سعر الوحدة السنوي: ١٦٬٠٠٠ جنيه. إجمالي البند:"
+        }
+      ],
+      "review_required": true,
+      "uncertainty_reasons": [
+        "The extracted target requires review before evidence can be decided."
+      ]
+    }
+  ],
+  "verification_provenance": {
+    "mode": "AI",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "prompt_version": "agent3-line-references-v6"
+  },
+  "coverage_confirmed": false,
+  "warnings": [
+    "tender-001: document completeness is not confirmed.",
+    "tender-001 page 1: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "tender-001 page 1: TABLE: Table structure and visual reading order were not verified.",
+    "tender-001 page 2: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "tender-001 page 2: TABLE: Table structure and visual reading order were not verified.",
+    "tender-001 page 3: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "tender-001 page 3: TABLE: Table structure and visual reading order were not verified.",
+    "company-001: document completeness is not confirmed.",
+    "company-001 page 1: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "company-001 page 1: TABLE: Table structure and visual reading order were not verified.",
+    "company-002: document completeness is not confirmed.",
+    "company-002 page 1: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "company-002 page 1: TABLE: Table structure and visual reading order were not verified.",
+    "company-003: document completeness is not confirmed.",
+    "company-003 page 1: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "company-003 page 1: TABLE: Table structure and visual reading order were not verified.",
+    "company-004: document completeness is not confirmed.",
+    "company-004 page 1: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "company-004 page 1: TABLE: Table structure and visual reading order were not verified.",
+    "company-004 page 2: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "company-004 page 2: TABLE: Table structure and visual reading order were not verified.",
+    "company-005: document completeness is not confirmed.",
+    "company-005 page 1: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "company-005 page 1: TABLE: Table structure and visual reading order were not verified.",
+    "company-006: document completeness is not confirmed.",
+    "company-006 page 1: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "company-006 page 1: TABLE: Table structure and visual reading order were not verified.",
+    "company-007: document completeness is not confirmed.",
+    "company-007 page 1: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "company-007 page 1: TABLE: Table structure and visual reading order were not verified.",
+    "company-008: document completeness is not confirmed.",
+    "company-008 page 1: INFO: Arabic presentation forms/order normalized using contextual glyph evidence.",
+    "company-008 page 1: TABLE: Table structure and visual reading order were not verified.",
+    "Full readable tender coverage is not confirmed.",
+    "Table structure is unverified on pages: [1, 2, 3].",
+    "Tender completeness is not confirmed.",
+    "INFO: Explicit synthetic-test evaluation; fictional labels alone do not establish noncompliance.",
+    "Company document completeness or readability is not confirmed.",
+    "Full document coverage is not confirmed; review the source PDFs."
+  ]
+}

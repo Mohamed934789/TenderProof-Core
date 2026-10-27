@@ -1,0 +1,60 @@
+{
+  "example_id": "case_101:R02",
+  "expected_status": "SATISFIED",
+  "predicted_status": "NEEDS_REVIEW",
+  "error_type": null,
+  "finding": {
+    "target_type": "ELIGIBILITY",
+    "target_id": "R02",
+    "status": "NEEDS_REVIEW",
+    "explanation": "Claimed expiry date is not supported by the exact quote.",
+    "evidence": [
+      {
+        "document_id": "case_101/02_activity_license.pdf",
+        "pdf_page": 1,
+        "quote": " الفئات الفنية المشمولة: Xerox وCanon وPlotter ، وأجهزة A3 وA4 تامدخو ، Print وScan وCopy."
+      }
+    ],
+    "review_required": true,
+    "uncertainty_reasons": [
+      "Claimed expiry date is not supported by the exact quote."
+    ]
+  },
+  "latency_seconds": 21.63581680000061,
+  "json_valid": true,
+  "call_attempted": true,
+  "citation_count": 1,
+  "valid_citation_count": 1,
+  "input_hash": "6eb0cdc035778cd9c177506a6ce5a88624fee0fd31f504ac11795b076bd81324",
+  "raw_payload": {
+    "results": [
+      {
+        "target_type": "ELIGIBILITY",
+        "target_id": "R02",
+        "evidence_found": true,
+        "sources": [
+          {
+            "line_id": "D002-P001-L0013"
+          }
+        ],
+        "assessment": "SUPPORTS",
+        "explanation": "يتضمن بيان ترخيص النشاط (D002-P001-L0013) تاريخ إصدار صريح (١ يناير ٢٠٢٦) وتاريخ انتهاء صريح (٣١ ديسمبر ٢٠٢٧)، وهذا التاريخ يقع بعد تاريخ الإقفال المحدد في ٣١ أكتوبر ٢٠٢٦، مما يعني أن الترخيص ساري المفعول في تاريخ الإقفال.",
+        "expiry_date": "2027-12-31",
+        "offered_quantity": null,
+        "offered_unit": null
+      }
+    ]
+  },
+  "response_text": "{\"results\": [\n  {\n   \"target_type\": \"ELIGIBILITY\",\n   \"target_id\": \"R02\",\n   \"evidence_found\": true,\n   \"sources\": [{\"line_id\": \"D002-P001-L0013\"}],\n   \"assessment\": \"SUPPORTS\",\n   \"explanation\": \"يتضمن بيان ترخيص النشاط (D002-P001-L0013) تاريخ إصدار صريح (١ يناير ٢٠٢٦) وتاريخ انتهاء صريح (٣١ ديسمبر ٢٠٢٧)، وهذا التاريخ يقع بعد تاريخ الإقفال المحدد في ٣١ أكتوبر ٢٠٢٦، مما يعني أن الترخيص ساري المفعول في تاريخ الإقفال.\",\n   \"expiry_date\": \"2027-12-31\",\n   \"offered_quantity\": null,\n   \"offered_unit\": null\n  }\n ]}",
+  "usage": {
+    "input_tokens": 13760,
+    "output_tokens": 753,
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "reasoning_tokens": 597
+  },
+  "model_version": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "route": "Nvidia",
+  "response_sha256": "ccaa11def55d16df3bf464799510deff71b689e487bb0204b57b8872809c24d2",
+  "provider_reported_cost_usd": 0
+}
