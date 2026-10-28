@@ -1,0 +1,11 @@
+# Explicit opt-in only. Never include this file during free development checks.
+services:
+  api:
+    environment:
+      TENDERPROOF_ALLOW_PAID_API: "1"
+      OPENAI_API_KEY_FILE: /run/secrets/openai_api_key
+    secrets:
+      - openai_api_key
+secrets:
+  openai_api_key:
+    file: ./.secrets/openai_api_key

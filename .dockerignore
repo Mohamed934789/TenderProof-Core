@@ -1,0 +1,13 @@
+# Deny by default: never send keys, .env, PDFs, reports, runtime, Git, or venv to Docker.
+**
+
+!Dockerfile
+!docker-compose.yml
+!requirements.txt
+!*.py
+
+!web/
+!web/**
+
+!.streamlit/
+!.streamlit/**

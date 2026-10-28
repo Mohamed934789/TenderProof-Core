@@ -102,6 +102,7 @@ class EligibilityOutput(TypedDict):
     provenance: ExtractionProvenance
     warnings: list[str]
 
+
 class TechnicalOutput(TypedDict):
     boq_status: BOQStatus
     boq_review_reasons: list[str]
@@ -135,3 +136,14 @@ class Report(TypedDict):
     verification_provenance: ExtractionProvenance
     coverage_confirmed: bool
     warnings: list[str]
+
+class EvidenceResult(TypedDict):
+    target_type: Literal["ELIGIBILITY", "TECHNICAL", "BOQ"]
+    target_id: str
+    evidence_found: bool
+    sources: list[dict]
+    assessment: Literal["SUPPORTS", "CONTRADICTS", "UNCERTAIN"]
+    explanation: str
+    expiry_date: str | None
+    offered_quantity: str | None
+    offered_unit: str | None

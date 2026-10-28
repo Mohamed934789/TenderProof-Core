@@ -1,0 +1,55 @@
+name: tenderproof-final
+services:
+  api:
+    build: .
+    image: tenderproof-final:local
+    init: true
+    command: ["python", "-m", "uvicorn", "web.api:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+    ports:
+      - "127.0.0.1:8002:8000"
+    environment:
+      TENDERPROOF_ALLOW_PAID_API: "0"
+      TENDERPROOF_SINGLE_AI_RUN: "1"
+      OPENAI_MODEL: gpt-6-luna
+    volumes:
+      - type: bind
+        source: ./runtime/docker/api
+        target: /data
+      - type: bind
+        source: ./demo
+        target: /demo
+        read_only: true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      start_period: 30s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+  ui:
+    image: tenderproof-final:local
+    pull_policy: never
+    init: true
+    command: ["python", "-m", "streamlit", "run", "web/app.py", "--server.address", "0.0.0.0", "--server.port", "8501"]
+    ports:
+      - "127.0.0.1:8503:8501"
+    environment:
+      TENDERPROOF_API_URL: http://api:8000
+    volumes:
+      - type: bind
+        source: ./runtime/docker/ui
+        target: /data
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      start_period: 30s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]

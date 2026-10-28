@@ -1,0 +1,18 @@
+{
+  "example_id": "case_202:R09",
+  "http_status": 200,
+  "http_status_basis": "JSON response successfully read via urlopen; no HTTPError",
+  "finish_reason": "error",
+  "provider_error": {
+    "code": 504,
+    "message": "Upstream idle timeout exceeded",
+    "metadata": {
+      "error_type": "timeout"
+    }
+  },
+  "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "provider": "Nvidia",
+  "cost_usd": 0,
+  "new_inference_calls": 0,
+  "inference_retried": false
+}

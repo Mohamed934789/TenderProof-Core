@@ -1,0 +1,83 @@
+{
+  "scenarios": [
+    {
+      "case": "case_101",
+      "counts": {
+        "SATISFIED": 11,
+        "CONTRADICTED": 0,
+        "MISSING_EVIDENCE": 0,
+        "NEEDS_REVIEW": 3
+      },
+      "findings_inspected": 14,
+      "citation_displays_checked": 105,
+      "original_validation": "PASS",
+      "all_filter_options": "PASS",
+      "download_matches_original": true,
+      "saved_badge_visible": true,
+      "coverage_confirmed": false
+    },
+    {
+      "case": "case_202",
+      "counts": {
+        "SATISFIED": 2,
+        "CONTRADICTED": 8,
+        "MISSING_EVIDENCE": 0,
+        "NEEDS_REVIEW": 3
+      },
+      "findings_inspected": 13,
+      "citation_displays_checked": 82,
+      "original_validation": "PASS",
+      "all_filter_options": "PASS",
+      "download_matches_original": true,
+      "saved_badge_visible": true,
+      "coverage_confirmed": false
+    },
+    {
+      "case": "case_303",
+      "counts": {
+        "SATISFIED": 3,
+        "CONTRADICTED": 0,
+        "MISSING_EVIDENCE": 0,
+        "NEEDS_REVIEW": 10
+      },
+      "findings_inspected": 13,
+      "citation_displays_checked": 72,
+      "original_validation": "PASS",
+      "all_filter_options": "PASS",
+      "download_matches_original": true,
+      "saved_badge_visible": true,
+      "coverage_confirmed": false
+    }
+  ],
+  "browser_errors": [],
+  "source_files_unchanged": true,
+  "paid_api_calls": 0,
+  "independent_compose_project": true,
+  "all_mounts_inside_final": [
+    {
+      "target": "/data",
+      "source": "D:\\TenderProof-Final\\runtime\\docker\\api",
+      "read_only": false
+    },
+    {
+      "target": "/demo",
+      "source": "D:\\TenderProof-Final\\demo",
+      "read_only": true
+    },
+    {
+      "target": "/data",
+      "source": "D:\\TenderProof-Final\\runtime\\docker\\ui",
+      "read_only": false
+    }
+  ],
+  "original_sources_unchanged": true,
+  "core_and_design_byte_identical": true,
+  "secret_files_present": false,
+  "default_paid_enabled": false,
+  "start_stop_cycle": "PASS",
+  "real_ai_without_key_blocked": true,
+  "synthetic_pdf_count": 25,
+  "all_pdf_synthetic_markers": true,
+  "visual_review": "Opened case_202 and case_303 Final evidence screenshots; Arabic RTL, pages and quotes readable",
+  "delivery_mode": "Saved Demo only; no API keys included"
+}
