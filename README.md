@@ -1,119 +1,196 @@
-# TenderProof AI — نسخة التسليم والعرض
+<div align="center">
 
-## افتح التطبيق بدبل كليك
+# TenderProof AI
 
-1. فك ضغط `TenderProof-Final.zip` بالكامل في مجلد قابل للكتابة، مثل `D:\TenderProof-Final`. لا تشغّل الملفات من داخل نافذة ZIP.
-2. ثبّت Docker Desktop على Windows مع WSL2 وLinux containers. لا تحتاج Python أو المجلدات القديمة لتشغيل التطبيق. أول build يحتاج إنترنت لتنزيل Python والمكتبات؛ Image غير مرفقة في ZIP.
-3. افتح `START_TENDERPROOF.bat` بدبل كليك. يشغّل Docker Desktop إذا لزم، ويبني التطبيق، ويفتح http://127.0.0.1:8503 تلقائيًا.
-4. لإيقافه افتح `STOP_TENDERPROOF.bat`. يوقف مشروع Final فقط، ولا يحذف الملفات أو القفل ولا يغلق Docker Desktop.
+### Bid with Evidence. Decide with Confidence.
 
-نسخة Final مستقلة: Compose project باسم `tenderproof-final` وImage باسم `tenderproof-final:local`. UI على **8503** وAPI على **8002**؛ الأرقام مختلفة عن نسخة Web القديمة كي يشتغلا جنب بعض. كل البيانات mounted من مجلد Final نفسه. يمكن نقل المجلد لجهاز آخر؛ المسارات داخل ملفات BAT تعتمد على مكانها.
+**AI-assisted tender review for Arabic documents, with decisions you can trace to the source.**
 
-## عرض السيناريوهات بدون تكلفة
+A **Samsung Innovation Campus** team project connecting document analysis, evidence verification, and a practical review workspace.
 
-من **مصدر المستندات** اختار **Demo Mode — مستندات افتراضية**، ثم case_101 أو case_202 أو case_303، ثم **عرض التقرير المحفوظ**. لا يلزم رفع ملفات أو إدخال مفتاح. انتظر تحميل التقرير والتحقق من مراجعه. الشارة تقول **تقرير محفوظ — ليس تحليلًا جديدًا**.
+[Overview](#overview) · [Quick Start](#quick-start) · [Demo Scenarios](#demo-scenarios) · [AI Evaluation & MLflow](#ai-evaluation--mlflow) · [Documentation](#documentation)
 
-| السيناريو | مستوفى | مخالف | دليل ناقص | يحتاج مراجعة |
-|---|---:|---:|---:|---:|
-| case_101 | 11 | 0 | 0 | 3 |
-| case_202 | 2 | 8 | 0 | 3 |
-| case_303 | 3 | 0 | 0 | 10 |
+</div>
 
-case_101 تقرير قبول OpenAI سابق. case_202 وcase_303 تقارير Replay محفوظة وفق وصفها في القائمة. الثلاثة ليسوا نتائج AI تتولد وقت العرض. اكتمال مجموعات المستندات غير مؤكد في التقارير، لذلك MISSING_EVIDENCE صفر؛ لا نحول نقص الدليل إلى مخالفة أو نختلق تنوعًا في الحالات.
+![TenderProof AI evidence inspector showing a saved synthetic case, source quotations, PDF pages, status cards, and filters](docs/evidence/case_101-final-evidence.png)
 
-لشرح اختلاف الحالات ابحث عن **R02** واضغط Enter في كل سيناريو: ترخيص سارٍ في case_101، منتهٍ في case_202، وتاريخ انتهائه غير محدد في case_303. عارض الأدلة يعرض الشرط والتفسير واقتباسات المصدر واسم PDF ورقم الصفحة. لو اللوحة طويلة مرّر داخلها لرؤية كل الاقتباسات. يمكن فلترة الحالة ونوع الشرط والبحث، ثم تنزيل التقرير الأصلي عبر **تنزيل التقرير الأصلي · JSON**. احفظه باسم السيناريو أو في مجلد مستقل لأن اسم التنزيل الافتراضي قد يتكرر.
+<p align="center"><em>Actual application screenshot · Arabic RTL interface · Saved Demo, not a new AI analysis.</em></p>
 
-Evidence Verification يطابق النص المستشهد به بصفحته الأصلية، لكنه وحده لا يثبت أصالة المستند أو صحة كل تفسير. تحذيرات BOQ ظاهرة؛ أصناف الجدول الثلاثة هنا NEEDS_REVIEW بسبب غموض الاستخراج. لا تقدم التقرير كقرار قانوني نهائي أو ضمان أهلية كامل.
+---
 
-## ملفات PDF التي ترفعها لكل سيناريو
+## Overview
 
-المستندات كلها افتراضية، ومكانها **demo** بجوار START. استخدم ملفات سيناريو واحد معًا، وتاريخ تقييم **2026-10-31**. كراسة كل سيناريو هي `requirements_ar.pdf`؛ لا تحتاج `ida-335.pdf` في هذا الديمو.
+TenderProof AI helps bid teams review a tender's eligibility requirements, technical conditions, and bill of quantities against company documents. It produces an explainable report that connects findings to **original quotations, document names, and PDF page numbers**.
 
-**case_101 — demo/case_101/**
+The project combines a Python AI core, a FastAPI service, a Streamlit review interface, Docker deployment, and optional MLflow tracking. It is designed to support human review before a bid submission.
 
-- خانة كراسة الشروط: `requirements_ar.pdf`.
-- خانة مستندات الشركة: `01_company_profile.pdf`، `02_activity_license.pdf`، `03_tax_statement.pdf`، `04_previous_work.pdf`، `05_maintenance_authorization.pdf`، `06_service_commitment.pdf`، `07_technical_team.pdf`، `08_financial_offer.pdf`.
+**A finding is useful when a reviewer can inspect its evidence, understand its reasoning, and see what remains uncertain.**
 
-**case_202 — demo/case_202/**
+## Problem
 
-- خانة كراسة الشروط: `requirements_ar.pdf`.
-- خانة مستندات الشركة: `01_company_profile.pdf`، `02_activity_license.pdf`، `03_tax_statement.pdf`، `04_previous_work.pdf`، `05_maintenance_authorization.pdf`، `06_service_commitment.pdf`، `07_technical_team.pdf`، `08_financial_offer.pdf`.
+A tender submission can involve many conditions spread across Arabic PDFs, tables, licenses, experience records, and financial documents. Manual review makes it difficult to:
 
-**case_303 — demo/case_303/**
+- Identify every relevant requirement and its source.
+- Match a requirement to the correct company evidence and scope.
+- Notice an expired license, an explicit contradiction, or an unclear validity date.
+- Distinguish missing proof from evidence of non-compliance.
+- Explain a decision to another reviewer without repeating the entire document search.
 
-- خانة كراسة الشروط: `requirements_ar.pdf`.
-- خانة مستندات الشركة الستة فقط: `01_company_profile.pdf`، `02_activity_license.pdf`، `04_previous_work.pdf`، `06_service_commitment.pdf`، `07_technical_team.pdf`، `08_financial_offer.pdf`.
-- غياب 03 و05 مقصود في الملفات الحالية؛ لا تنشئهما أو تضف ملفات من سيناريو آخر.
+TenderProof targets bid and procurement teams, suppliers, service contractors, and document reviewers working with this process.
 
-`report.json` في كل مجلد تقرير محفوظ للعرض، وليس ملفًا ترفعه في خانة PDF. ملف `demo/manifest.json` يربط هذه الملفات بالديمو؛ احتفظ بأسماء الملفات كما هي. في Saved Demo لا تحتاج رفع أي ملفات أصلًا. رفع الملفات بوضع MOCK يفحص المسار دون LLM، ولا يولد أحكامًا؛ صفر نتائج في MOCK متوقع.
+## Solution
 
-## Real AI — اختياري ومقفول افتراضيًا
+**Extract → Match → Verify → Explain**
 
-لا تحتوي نسخة التسليم على `.env` أو API Keys أو ملفات secret. `START_TENDERPROOF.bat` يشغّل Saved Demo وMOCK فقط، ويغلق بوابة المدفوع حتى لو سبق تشغيل Real AI. اختيار AI وحده لا يبدأ تحليلًا.
+TenderProof extracts requirements, compares them with the available company documents, validates source references, and presents an evidence-linked report. Four statuses preserve the distinction between a supported decision and a case that needs more information:
 
-لتفعيل Real AI بعد موافقة المسؤول على التكلفة:
+| Status | Meaning |
+|---|---|
+| `SATISFIED` | Sufficient, clear evidence supports the requirement. |
+| `CONTRADICTED` | Explicit evidence conflicts with the requirement. |
+| `MISSING_EVIDENCE` | Required evidence was not found in a company-document set confirmed complete and sufficiently readable. |
+| `NEEDS_REVIEW` | Uncertainty, incomplete coverage, or insufficient evidence prevents a reliable decision. |
 
-1. أنشئ مجلد `.secrets` داخل Final، وفيه ملف نصي بلا امتداد اسمه `openai_api_key`، وضع فيه المفتاح فقط عبر محرر محلي. لا تضعه في BAT أو Dockerfile، ولا ترسله في ZIP أو الرسائل، ولا تنسخه من مجلد قديم تلقائيًا. راجع أن اسم الملف ليس `openai_api_key.txt` عند إخفاء الامتدادات في Windows.
-2. افتح **START_REAL_AI.bat** بدبل كليك. يمرر secret للـAPI فقط وقت التشغيل، read-only، ولا ينسخه إلى Image أو UI. لو المفتاح ناقص/فارغ أو غير مقروء تظهر رسالة واضحة. صلاحية المفتاح والرصيد لا يمكن إثباتهما من فحص الجاهزية فقط.
-3. في الواجهة اختار **رفع ملفات**، ثم **إعدادات متقدمة → AI — OpenAI حقيقي**. ارفع PDFs المذكورة للسيناريو، واضبط تاريخ التقييم `2026-10-31`. فعّل **مستندات افتراضية فقط — synthetic-test** لهذه المجموعة. لا تؤكد اكتمال المستندات إلا لو تعريف الاختبار يثبته؛ التقارير المرفقة لا تفترضه.
-4. وافق على إرسال المستندات والتكلفة، ثم اضغط **بدء المراجعة** فقط عندما تريد تحليلًا مدفوعًا بالفعل. الموديل الحالي `gpt-6-luna`.
-5. الحماية الحالية: محاولة AI واحدة لكل runtime، 3 generation calls كحد أقصى وبدون retries، مع token counting وحجز تكلفة تقديري أقصاه $0.50. القفل `runtime/docker/api/real-ai-e2e/single-attempt.lock` محفوظ بعد المحاولة، حتى لو فشلت. إعادة START/STOP لا تحذفه ولا تفتح محاولة جديدة. لا تغيّر runtime أو تحذف القفل لتكرار تجربة دون تصريح جديد.
-6. لتعطيل المدفوع، افتح **START_TENDERPROOF.bat** العادي، ثم اعمل Refresh. API Health يجب أن يرجع `paid_ai_enabled=false`. أو أوقف التطبيق بـSTOP.
+A document that was not supplied is **not automatically a contradiction**. An unknown quantity is **not zero**. A quoted sentence must come from its referenced page.
 
-الـHealth: http://127.0.0.1:8002/health، والـAPI docs: http://127.0.0.1:8002/docs. `READY` تعني جاهزية إعدادات وليست اختبار API ناجحًا. لم يتم تشغيل أي تحليل OpenAI أثناء تجهيز Final أو اختبارها.
+## Key Features
 
-## المستندات والأدلة المرفقة
+| Capability | What is implemented |
+|---|---|
+| Arabic document reading | Native PDF text extraction, Arabic text handling, original page numbers, and scoped extraction warnings. |
+| Three specialized agents | Eligibility extraction; technical and BOQ extraction; company-evidence verification. |
+| Evidence verification | LLMs return supplied line IDs; Python restores the original citations and validates them. |
+| Quantity and date checks | Grounded Arabic/Western numeric quantities, clear supported word or dual forms, validity dates, and supported duration comparisons. |
+| Reviewer workspace | Arabic RTL interface, four summary cards, searchable/filterable requirements, and a side-by-side evidence inspector. |
+| Shareable reports | Download the original structured JSON report without changing its decisions or citations. |
+| Transparent operating modes | Distinct Saved Demo, MOCK, and Real AI labels. |
+| Optional MLflow | Stage timings, counts, and validation metrics; tracking failure does not stop analysis. |
+| Local Docker deployment | Separate API and UI services, runtime-only secrets, and persistent runtime storage. |
 
-- `docs/DEMO_REHEARSAL.md`: كلام العرض وخطواته في 4–5 دقائق.
-- `docs/TENDERPROOF_BENCHMARK_FINAL_REPORT.md`: تقرير المقارنة المختصر.
-- `docs/benchmark/`: المقارنة CSV/JSON، وتشخيص فشل المزود، ومثال اختلاف case_101:R02. الملفات مصدرها سجلات محفوظة، وليست تجارب جديدة.
-- `docs/evidence/previous-real-ai-acceptance.json` و`previous-real-ai-case_101.json`: دليل تشغيل Web حقيقي سابق منفصل، أنتج 12 SATISFIED و3 NEEDS_REVIEW. مختلف عن Saved Demo case_101 ذي 11 SATISFIED؛ لم نعدّل أيًا منهما أو نستبدل أحدهما بالآخر.
-- `docs/evidence/`: صور الأدلة ونتيجة فحص Final المستقل. كلمة previous تميز صور ونتائج البروفة السابقة عن فحص Final.
-- `docs/source-file-hashes.json`: بصمات ملفات المصادر وقت النسخ لإثبات عدم تعديل المجلدات الأصلية. المسارات فيه سجل مصدر فقط، وليست اعتمادًا لتشغيل Final.
-- `DELIVERY_MANIFEST.json`: قائمة ملفات التسليم وبصماتها للتحقق من سلامة النقل.
+## How It Works
 
-الـBenchmark **LLM-Judged Development** بمراجع Claude مؤقتة، وليس Human Gold أو Holdout مستقلًا. GPT أكمل 18، Gemini أكمل 2، Nemotron أكمل 16. المقارنة الصالحة المشتركة على 16 حالة: اتفاق GPT مع Claude 16/16 وNemotron 15/16، وF1 للفئتين المدعومتين 100% و97.37% على الترتيب. لا تعرض Gemini كترتيب نهائي أو الأرقام كدقة عامة على مستندات جديدة. التقرير يشرح أسباب عدم اكتمال المقارنة.
+1. **Provide the documents.** Upload one tender PDF and multiple company PDFs, or open a supplied Saved Demo.
+2. **Read the sources.** `pdf_reader.read_pdf()` preserves page references and records extraction uncertainty.
+3. **Extract requirements.** Agent 1 identifies eligibility conditions; Agent 2 identifies technical requirements and BOQ items.
+4. **Validate extraction.** Python resolves line references and checks contracts, citations, quantities, and target identifiers.
+5. **Verify the company.** Agent 3 assesses company evidence using the supplied evaluation date and completeness information.
+6. **Inspect the report.** Review statuses, explanations, source quotations, PDF pages, warnings, and the downloadable JSON.
 
-## ماذا ترسل؟
+The current orchestrator executes Agent 1, then Agent 2, then Agent 3 after extraction validation. These are fixed pipeline stages, not autonomous agents.
 
-**للفريق:** أرسل `TenderProof-Final.zip` كاملة. تحتوي كود التشغيل وDocker والمستندات الافتراضية والتقارير والأدلة والتوثيق، دون Git أو venv أو كاش أو أسرار أو MLflow database. يفكونها ويشغلون START؛ لا يحتاجون TenderProof-Core أو TenderProof-Web أو TenderProof-Experiments.
+### Evidence that explains the outcome
 
-**للجنة:** أرسل نفس ZIP لو مطلوب تطبيق قابل للتجربة. وللمراجعة المختصرة أرسل README وتقرير Benchmark ونتيجة فحص Final وصور الأدلة، مع الإيضاح أن Saved Demo محفوظ وأن المرجع البحثي مؤقت. لا ترسل key أو `.env` أو runtime الذي سينشأ على جهازك بعد الاستخدام. النسخة الحالية محلية وليست خدمة منشورة للإنترنت، ولا تضم Authentication أو Image جاهزة للعمل دون إنترنت أول مرة.
+| Explicit contradiction | A reason to keep human review |
+|---|---|
+| ![Saved case 202: expired activity license and its original evidence](docs/evidence/case_202-final-evidence.png) | ![Saved case 303: an unspecified expiry date remains under review](docs/evidence/case_303-final-evidence.png) |
+| `case_202` identifies a license that expired before the reference date. | `case_303` retains `NEEDS_REVIEW` when the actual expiry date is unclear. |
 
-لو Docker غير موجود أو المحرك لا يبدأ، افتح Docker Desktop وراجع WSL2 وLinux containers. ملفات BAT تستخدم docker.exe بالمسار الكامل لتجنب ملف Windows المسمى docker بلا امتداد. لا تحتاج اختيار برنامج لفتح docker يدويًا. شغّل START من المجلد المفكوك، وليس من ZIP، ولا تشغّل START أثناء تحليل جارٍ لأنه قد يعيد إنشاء الحاويات. في العرض استخدم Saved Demo لتجنب انتظار LLM والتكلفة.
+These are real screenshots of saved synthetic scenarios. They are not recordings of new inference requests.
 
+## Architecture
 
-## مراجعة UX النهائية
+```mermaid
+flowchart TD
+    UI[Streamlit review workspace] --> API[FastAPI]
+    API --> ORCH[Orchestrator]
+    ORCH --> READER[PDF Reader]
+    READER --> TENDER[Tender pages and line references]
+    READER --> COMPANY[Company pages and line references]
+    TENDER --> A1[Agent 1: Eligibility]
+    TENDER --> A2[Agent 2: Technical and BOQ]
+    A1 --> EXTRACT[Extraction validation]
+    A2 --> EXTRACT
+    EXTRACT --> A3[Agent 3: Evidence verification]
+    COMPANY --> A3
+    A3 --> VALIDATE[Verification and report validation]
+    VALIDATE --> REPORT[Structured JSON report]
+    REPORT --> UI
+    ORCH -. Optional numeric telemetry .-> MLFLOW[MLflow / SQLite]
+    API --> SAVED[Saved Demo: load report and validate original PDF sources]
+    SAVED --> UI
+```
 
-قسم النتائج العلوي «تغيير الملفات أو اختيار سيناريو آخر» يفتح إعدادات المدخلات؛ ليس حقل بيانات إضافيًا. تنبيه Saved Demo معلومة زرقاء توضح أن المعروض تقرير سابق، مع استمرار الشارة الثابتة. تحذير عدم تأكيد اكتمال المستندات منفصل وواضح؛ ملاحظات القراءة الأصلية وتحذيرات BOQ وأسباب NEEDS_REVIEW محفوظة. تفاصيل جاهزية السيرفر التقنية موجودة في Advanced Settings، بينما رسالة الصفحة تشرح للمستخدم ما الذي يمكنه عمله.
+| File or directory | Responsibility |
+|---|---|
+| [`pdf_reader.py`](pdf_reader.py), [`arabic_utils.py`](arabic_utils.py) | PDF reading and Arabic text utilities. |
+| [`agent1.py`](agent1.py) | Eligibility requirement extraction. |
+| [`agent2.py`](agent2.py) | Technical requirements, BOQ items, quantities, and units. |
+| [`agent3.py`](agent3.py) | Company evidence assessment and supported findings. |
+| [`validation.py`](validation.py) | Data contracts, exact citations, quantities, dates, and report checks. |
+| [`models.py`](models.py), `*_schema.py` | Shared data structures and structured-output schemas. |
+| [`llm_client.py`](llm_client.py), [`openai_adapter.py`](openai_adapter.py) | LLM interface and the OpenAI implementation used by the application. |
+| [`orchestrator.py`](orchestrator.py) | Pipeline sequencing and report assembly. |
+| [`web/api.py`](web/api.py), [`web/app.py`](web/app.py) | FastAPI endpoints and the Streamlit interface. |
+| [`tracker.py`](tracker.py) | Optional, failure-isolated operational MLflow tracking. |
+| [`demo/`](demo/), [`tests/`](tests/) | Synthetic scenarios, saved reports, fixtures, and offline tests. |
 
-نجح فحص Chromium Headless على Desktop وMobile، مع رفع 9 PDFs بوضع MOCK على الحجمين، وعرض Saved Demo للسيناريوهات الثلاثة والفلاتر والأدلة والصفحات وتنزيل JSON مطابق للأصل. الصور قبل وبعد ونتيجة الفحص داخل `runtime/ux-review/`. لم يتغير Core أو API أو CSS أو التقارير، ولم تُجرَ استدعاءات مدفوعة أو اختبارات شاملة أو Commit/Push/Merge.
+## Tech Stack
 
-تعديلات UX الحالية داخل هذا المجلد. أرشيف ZIP السابق خارج المجلد لم يُحدَّث في مراجعة UX؛ يلزم إعادة إنشائه عند تجهيز التسليم التالي.
+| Layer | Technology |
+|---|---|
+| Language | Python 3.12+ |
+| Document extraction | pypdf and existing Arabic text utilities |
+| Application AI | OpenAI API through `openai_adapter.py`; structured JSON and supplied line references |
+| Backend | FastAPI, Uvicorn |
+| Review interface | Streamlit, Arabic RTL styling |
+| Experiment tracking | MLflow, SQLite |
+| Packaging | Docker, Docker Compose, Windows batch launchers |
+| Offline verification | pytest, pytest-asyncio, fake LLM clients, saved evidence |
 
+Gemini and Nemotron appear in the **historical development benchmark**. This does not mean the application exposes those providers as interchangeable production adapters.
 
-## النسخة الموحدة للتسليم — integration/samsung-final
+## Quick Start
 
-النسخة دي تحتفظ بـAI Core والـPrompts المعتمدة، FastAPI وStreamlit وDocker وSaved Demo، وتضيف MLflow اختياري لتسجيل مؤشرات التشغيل فقط. التسجيل لا يغيّر التقرير ولا يصنع Ground Truth. تقرير الـBenchmark السابق في `docs/benchmark/` مستقل عن مؤشرات التشغيل الجديدة.
+### 1. Get the project
 
-### التشغيل على Windows بدبل كليك
+```bash
+git clone --branch main https://github.com/Mohamed934789/TenderProof-Core.git
+cd TenderProof-Core
+```
 
-1. ثبّت Git وDocker Desktop، وشغّل Linux Containers.
-2. نزّل أو اعمل Clone للنسخة الحالية من GitHub.
-3. افتح `START_TENDERPROOF.bat`؛ الواجهة على http://127.0.0.1:8503 وFastAPI على http://127.0.0.1:8002/docs.
-4. اختَر Demo Mode ثم case_101 أو case_202 أو case_303 واضغط عرض التقرير المحفوظ. دي نتائج محفوظة بعلامة واضحة، وليست تحليل AI جديدًا.
-5. ملفات الرفع لكل سيناريو داخل `demo/case_XXX`: `requirements_ar.pdf` للكراسة، وكل ملفات `0*.pdf` للشركة في نفس المجلد. استخدم تاريخ 2026-10-31. لا تخلط السيناريوهات.
-6. `STOP_TENDERPROOF.bat` يوقف التطبيق دون حذف ملفات أو أقفال.
+Install **Docker Desktop with Linux containers** on Windows, or Docker Engine with Compose on Linux. The first image build needs internet access. Keep enough free disk space for the image and Docker's storage.
 
-### Docker من الطرفية
+### 2. Start the free demo
+
+**Windows:** clone or extract to a writable folder on `D:`, start Docker Desktop, and double-click **[`START_TENDERPROOF.bat`](START_TENDERPROOF.bat)**. Use **[`STOP_TENDERPROOF.bat`](STOP_TENDERPROOF.bat)** to stop the app without deleting documents, secrets, or attempt locks.
+
+**Docker Compose:** on a fresh **Linux** checkout, first create the writable bind-mount directories for the image's non-root UID (Windows users can skip this preparation):
+
+```bash
+mkdir -p runtime/docker/api runtime/docker/ui
+sudo chown 10001:10001 runtime/docker/api runtime/docker/ui
+```
+
+Then start the services:
+
+```bash
+docker compose up --build -d --wait
+```
+
+| Service | Local address |
+|---|---|
+| Streamlit workspace | http://127.0.0.1:8503 |
+| FastAPI documentation | http://127.0.0.1:8002/docs |
+| API health | http://127.0.0.1:8002/health |
+
+If Windows resolves an extensionless `docker` file instead of the CLI, use the official executable from PowerShell:
 
 ```powershell
 & "C:\Program Files\Docker\Docker\resources\bin\docker.exe" compose up --build -d --wait
 ```
 
-### تشغيل محلي بدون Docker
+Do not run multiple copies on the same ports, and do not restart containers during a paid analysis.
 
-Python 3.12 أو أحدث؛ من داخل مجلد المشروع في PowerShell:
+### 3. Open a Saved Demo
+
+In the interface, select **Demo Mode**, choose a scenario, and click **Display saved report** (`عرض التقرير المحفوظ`). Inspect the status cards, search for `R02`, open its evidence, and download JSON.
+
+**No API key or paid inference is required.** The saved report is validated against the supplied PDFs and clearly labeled as saved. MOCK checks the document pipeline without LLM extraction; an empty findings list in MOCK is expected.
+
+<details>
+<summary><strong>Run locally without Docker — Windows / PowerShell</strong></summary>
+
+Use Python 3.12+ and a project folder on `D:`. Run the following from the repository root:
 
 ```powershell
 py -3.12 -m venv .venv
@@ -125,58 +202,166 @@ $env:TENDERPROOF_SINGLE_AI_RUN="1"
 .\.venv\Scripts\python.exe -m uvicorn web.api:app --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
-في نافذة تانية من نفس المجلد:
+In a second terminal:
 
 ```powershell
 $env:TENDERPROOF_API_URL="http://127.0.0.1:8000"
 .\.venv\Scripts\python.exe -m streamlit run web/app.py --server.address 127.0.0.1 --server.port 8501
 ```
 
-### Real AI — تفعيل صريح فقط
+Native UI: http://127.0.0.1:8501. Native API: http://127.0.0.1:8000/docs.
 
-التشغيل العادي لا يرسل طلبات مدفوعة. Docker: أنشئ محليًا `.secrets/openai_api_key` واكتب المفتاح في محرر محلي؛ الملف مستبعد من Git وDocker build. افتح `START_REAL_AI.bat` أو:
+</details>
 
-```powershell
-& "C:\Program Files\Docker\Docker\resources\bin\docker.exe" compose -f docker-compose.yml -f docker-compose.ai.yml up --build -d --wait
-```
+### Optional: enable Real AI
 
-محليًا بدون Docker: ضع المفتاح في `.env` محلي غير متتبع، أو استخدم `OPENAI_API_KEY_FILE` لمسار ملف سري. اضبط في نافذة API قبل تشغيله:
+Real AI is **disabled by default on this branch**. It requires your own OpenAI API key, available credit, permission to send the documents to OpenAI, and explicit approval of the cost.
 
-```powershell
-$env:TENDERPROOF_ALLOW_PAID_API="1"
-$env:OPENAI_MODEL="gpt-6-luna"
-$env:TENDERPROOF_SINGLE_AI_RUN="1"
-```
+1. Create `.secrets/openai_api_key` locally in the repository root. Put only the key in that file using a local editor. Do not commit, paste into a command, or share it.
+2. On Windows, double-click **[`START_REAL_AI.bat`](START_REAL_AI.bat)**. Alternatively:
 
-اختَر AI في Advanced Settings، وارفع الملفات ووافق على تكلفة التشغيل، ثم اضغط بدء المراجعة مرة واحدة. الحد التقديري المحجوز $0.50، بحد أقصى 3 طلبات توليد، ولا توجد إعادة تلقائية. `synthetic-test` للمستندات الافتراضية فقط وليس افتراضيًا. `/health` يعرض READY أو سبب عدم الجاهزية؛ READY لا يؤكد صلاحية المفتاح أو الرصيد، ولم يتم اختبارهما بطلب مدفوع أثناء التكامل.
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.ai.yml up --build -d --wait
+   ```
 
-قفل المحاولة محفوظ في `runtime/docker/api/real-ai-e2e/single-attempt.lock` في Docker، و`runtime/real-ai-e2e/` محليًا. لا تحذفه ولا تغيّر runtime لإعادة تسليح محاولة مستهلكة. لو ATTEMPT_USED ظاهر، استخدم Saved Demo؛ أي تشغيل إضافي يتطلب موافقة جديدة ومراجعة مسؤول التشغيل. الإيقاف وإعادة التشغيل يحافظان على القفل.
+3. Select file upload, then **Real AI** in Advanced Settings. Upload the PDFs, set the reference date, and approve the document transfer and cost before pressing **Start review**.
+4. For the supplied fictional PDFs, explicitly enable `synthetic-test`. Leave company-document completeness unconfirmed unless you have a documented basis to confirm it.
 
-لإغلاق Real AI: افتح START_TENDERPROOF بدون `--real-ai`؛ أو شغّل Compose الأساسي فقط؛ محليًا اضبط `TENDERPROOF_ALLOW_PAID_API=0` وأعد تشغيل API.
+The Docker override mounts the secret into the API at runtime; it does not put the key in the image or UI. For native API operation, use a local `.env` based on [`.env.example`](.env.example), explicitly set `TENDERPROOF_ALLOW_PAID_API=1`, and restart the API. Use the configured model `gpt-6-luna`; the web safety gate permits that model only.
 
-### MLflow اختياري ومتكامل
+**The web API preserves a single-attempt lock, a maximum of three generation calls, no automatic retries, and a conservative reservation ceiling of $0.50.** The input-token count and output limits are checked before generation. This is an estimate/reservation guard, not an invoiced price guarantee. These web safeguards do not describe direct, separately invoked CLI AI usage.
 
-افتراضيًا التسجيل مقفول. لتفعيله مع Docker وفتح صفحة MLflow:
+- `READY` means configuration readiness, not a successful provider request or a balance check.
+- The Docker attempt lock is `runtime/docker/api/real-ai-e2e/single-attempt.lock`; native operation uses `runtime/real-ai-e2e/`.
+- START/STOP do not reset a consumed attempt. **Do not delete the lock or change runtime to rearm it.** Additional paid work requires fresh authorization.
+- To disable Real AI, start the base Compose file alone or use `START_TENDERPROOF.bat`. For native operation, set `TENDERPROOF_ALLOW_PAID_API=0` and restart the API.
+
+## Demo Scenarios
+
+All supplied scenario PDFs are **fictional test documents**, with evaluation date **2026-10-31**. Do not mix company files between scenarios.
+
+| Scenario | Company PDFs | Evidence to inspect |
+|---|---:|---|
+| [`case_101`](demo/case_101/) | 8 | A valid activity license supports `R02`. |
+| [`case_202`](demo/case_202/) | 8 | An explicitly expired license produces `CONTRADICTED` for `R02`. |
+| [`case_303`](demo/case_303/) | 6 | An unspecified expiry date keeps `R02` under review. |
+
+For each scenario, upload `requirements_ar.pdf` as the tender, and all `0*.pdf` files in the **same folder** as company documents. The JSON report is for viewing, not a PDF upload.
+
+- Cases 101 and 202 contain company files `01` through `08`.
+- Case 303 intentionally omits `03_tax_statement.pdf` and `05_maintenance_authorization.pdf`. Do not fill the gaps from another scenario.
+- `demo/manifest.json` binds the saved reports to their PDFs. Keep file names unchanged.
+- The local `ida-335.pdf` fixture is optional and is not needed for these demos.
+
+The reader does not establish that the company-document set is complete. Missing-document cases must therefore retain review unless completeness is explicitly established.
+
+## AI Evaluation & MLflow
+
+### Exploratory development benchmark
+
+The [benchmark report](docs/TENDERPROOF_BENCHMARK_FINAL_REPORT.md) evaluates Agent 3 on frozen conditions and evidence from synthetic scenarios already used in development.
+
+**Label source: `LLM_JUDGE_PROVISIONAL` from Claude Web. This is LLM-Judged Development, not Human Gold or an independent Holdout.** Of 27 development records, 18 were provisionally accepted and nine remain Pending Review.
+
+| Model | Completed / planned | Actual outcome |
+|---|---:|---|
+| GPT — `gpt-6-luna` | 18 / 18 | Completed; existing results were reused. |
+| Gemini — `gemini-3.6-flash` | 2 / 18 | Stopped on an HTTPError; the original HTTP code/details were not retained. |
+| Nemotron Ultra — OpenRouter `:free` | 16 / 18 | Stopped on an upstream idle timeout; no paid fallback was used. |
+
+The three-way benchmark **did not complete**. Compare GPT and Nemotron only on the 16 completed cases they share. Provider failures, partial coverage, and the `case_101:R02` disagreement are documented in the report.
+
+### Optional application tracking
 
 ```powershell
 $env:TENDERPROOF_MLFLOW_ENABLED="1"
-& "C:\Program Files\Docker\Docker\resources\bin\docker.exe" compose --profile tracking up --build -d --wait
+docker compose --profile tracking up --build -d --wait
 ```
 
-الواجهة http://127.0.0.1:5001، experiment اسمه `TenderProof_Evaluation`. اختَر **Model training → Runs** لعرض السجلات التشغيلية؛ صفحة GenAI Overview تعرض Traces غير مستخدمة هنا وقد تظهر فارغة. رابط مباشر للتجربة الأولى: http://127.0.0.1:5001/#/experiments/1/runs?workflowType=machine_learning . نفّذ فحص MOCK أو افتح Saved Demo لتظهر Runs؛ لا تحتاج API مدفوعة. الـAgents تسجل أعداد الشروط والـBOQ ومدة التشغيل، ثم نتائج التحقق. Saved Demo يسجل التحقق من تقرير محفوظ بعلامة SAVED_DEMO. لا تُعرض Precision/Recall/F1 بدون مرجع مستقل؛ المؤشرات هنا تشغيلية فقط. لا تُسجَّل مستندات أو اقتباسات أو أسماء ملفات أو مفاتيح أو مخرجات LLM. SQLite محفوظ تحت `runtime/docker/api/mlflow/mlflow.db`؛ فشل MLflow لا يوقف التحليل.
+On Windows with a Docker PATH issue, replace `docker` with the full executable shown above. Open http://127.0.0.1:5001 and select **Model training → Runs → TenderProof_Evaluation**. Generate a free MOCK run or open a Saved Demo to see operational records. The GenAI trace overview is not used by this integration.
 
-محليًا اضبط `TENDERPROOF_MLFLOW_ENABLED=1` قبل API، ثم:
+- The application records stage timings, counts, and validation metrics. It does not automatically compute benchmark precision or F1.
+- Document text, quotations, filenames, keys, and full model outputs are not logged by `tracker.py`.
+- Tracking is optional and failure-isolated. SQLite persists at `runtime/docker/api/mlflow/mlflow.db` in Docker.
+- The historical benchmark used a separate experiment, `TenderProof-LLM-Benchmark`. Its private database is not bundled; shareable comparison artifacts are in [`docs/benchmark/`](docs/benchmark/).
+- To combine tracking with Real AI, explicitly include both Compose files along with `--profile tracking`. Tracking itself does not authorize inference.
 
-```powershell
-.\.venv\Scripts\python.exe -m mlflow ui --backend-store-uri "sqlite:///$($PWD.Path.Replace('\','/'))/runtime/mlflow/mlflow.db" --host 127.0.0.1 --port 5001
-```
+## Results
 
-أوقف التسجيل بـ`TENDERPROOF_MLFLOW_ENABLED=0` وأعد تشغيل API. لا تعرّض MLflow على الإنترنت. عند تفعيل Docker Real AI وMLflow معًا أضف `-f docker-compose.yml -f docker-compose.ai.yml` قبل `--profile tracking`.
+### Saved Demo findings
 
-### تحقق مجاني
+| Saved scenario | SATISFIED | CONTRADICTED | MISSING_EVIDENCE | NEEDS_REVIEW |
+|---|---:|---:|---:|---:|
+| case_101 | 11 | 0 | 0 | 3 |
+| case_202 | 2 | 8 | 0 | 3 |
+| case_303 | 3 | 0 | 0 | 10 |
 
-```powershell
-.\.venv\Scripts\python.exe -m pytest tests -q
-```
+These are **saved findings**, not fresh model outputs. Case 101 comes from an earlier OpenAI acceptance report; cases 202 and 303 are preserved replay reports. All three keep BOQ review warnings. `MISSING_EVIDENCE` is zero here because document completeness is unconfirmed, not because that status is unsupported.
 
-الاختبارات تستخدم Fake LLM أو MOCK؛ بعض اختبارات Replay الخاصة اختيارية وتتخطى نفسها لو سجلات API المحلية غير موجودة. لا تشغّل سكربت Agent 2 اليدوي الحقيقي أو وضع AI أثناء الفحص المجاني.
+### Matched benchmark subset: 16 shared cases
+
+| Model | Agreement with Claude's provisional labels | Supported-class macro precision | Recall | F1 | Exact citations |
+|---|---:|---:|---:|---:|---:|
+| GPT, reused results | 16 / 16 | 100% | 100% | 100% | 129 / 129 |
+| Nemotron Ultra | 15 / 16 | 100% | 95% | 97.37% | 89 / 89 |
+
+**Scope matters:** the reference subset has 10 `SATISFIED` and six `CONTRADICTED` labels. P/R/F1 cover those two supported classes, not all four decision states. These exploratory numbers do not establish general accuracy, human agreement, or performance on unseen tenders. [Source CSV](docs/benchmark/comparison.csv) · [Coverage and metrics](docs/benchmark/comparison.json).
+
+GPT's recorded 18-case cost estimate was approximately **$0.02954**, not a final invoice. Nemotron's recorded provider cost was **$0**; coverage and provider routes differed. These are not an equal-workload pricing comparison.
+
+### Verification evidence
+
+The integration record reports **193 offline tests passed, 16 subtests passed, and six optional tests skipped**. It also records Docker/API/UI checks, real PDF uploads in MOCK, Saved Demo citation validation, JSON downloads, and Real AI configuration readiness. [Integration verification](docs/INTEGRATION_VERIFICATION.md).
+
+An [earlier live OpenAI web trial](docs/evidence/previous-real-ai-acceptance.json) is retained separately. It is not the same run as the Saved Demo. The integration verification used free checks and readiness checks; it did not claim a new paid acceptance run.
+
+No comprehensive tests or paid API calls were run for this README update.
+
+## Limitations
+
+- **Native text, not OCR:** image-only or damaged PDFs may need external preparation or human review.
+- **Tables remain a challenge:** native extraction does not guarantee the visual order or structure of every Arabic table.
+- **Coverage is not assumed:** a readable page does not prove that all documents were supplied or every requirement was found.
+- **Citation validity is a boundary, not full correctness:** an exact quotation does not establish document authenticity or guarantee a correct interpretation.
+- **Human review remains essential:** this is decision support, not a legal eligibility guarantee or automatic bid approval.
+- **Evaluation is limited:** small synthetic development data, provisional LLM labels, incomplete provider runs, and no independent Human Gold/Holdout.
+- **Local demo deployment:** loopback-bound services are intended for local use. The repository does not provide a hardened public hosting/authentication setup.
+
+## Team
+
+A five-member collaboration, organized around the responsibilities recorded in [`TEAM_TASKS.md`](TEAM_TASKS.md):
+
+| Working area | Main responsibility |
+|---|---|
+| Document AI & PDF | Arabic PDF reading, page quality, and source preservation. |
+| Eligibility | Agent 1 requirements, references, and extraction checks. |
+| BOQ & Technical | Agent 2 quantities, units, specifications, and uncertainty. |
+| Evidence Verification | Agent 3 company-evidence assessment and supported decisions. |
+| Integration & Validation | Shared contracts, orchestration, validation, and integration checks. |
+
+The task document is a historical planning record, not a current implementation checklist. Authorship is preserved in the [Git history](https://github.com/Mohamed934789/TenderProof-Core/commits/main/) and [contributors view](https://github.com/Mohamed934789/TenderProof-Core/graphs/contributors).
+
+## Documentation
+
+| Resource | What to open it for |
+|---|---|
+| [Demo rehearsal](docs/DEMO_REHEARSAL.md) | A 4–5 minute walkthrough and manual presentation steps. |
+| [Integration verification](docs/INTEGRATION_VERIFICATION.md) | What the integrated version actually verified. |
+| [Benchmark report](docs/TENDERPROOF_BENCHMARK_FINAL_REPORT.md) | Model coverage, valid comparisons, disagreements, and caveats. |
+| [Benchmark artifacts](docs/benchmark/) | Source CSV/JSON and provider-failure diagnosis. |
+| [Acceptance evidence](docs/evidence/) | Actual screenshots and historical acceptance records. |
+| [PDF reader notes](PDF_READER_NOTES.md) | Extraction boundaries and reader context. |
+| [Offline tests](tests/README.md) | Test organization and local prerequisites. |
+| [Public release review](docs/PUBLIC_RELEASE_REVIEW.md) | Security review scope and remaining publication considerations. |
+
+No project `LICENSE` file is currently included. Confirm code, fixture, and dataset redistribution permissions with the contributors before public release.
+
+---
+
+<div align="center">
+
+**TenderProof AI** · **Bid with Evidence. Decide with Confidence.**
+
+*Evidence you can inspect. Decisions you can review.*
+
+</div>
