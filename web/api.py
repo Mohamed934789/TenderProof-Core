@@ -40,6 +40,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from starlette.concurrency import run_in_threadpool
 from models import Report
 from orchestrator import analyze
+from tracker import MLflowTracker
 from pdf_reader import read_pdf
 from validation import validate_shape, validate_report
 
@@ -204,7 +205,7 @@ async def execute(tender, companies, reference_date, mode, complete, synthetic):
                     limit_openai_adapter(adapter, audit)
                 report = await analyze(tender, companies, reference_date=str(reference_date), mode=mode,
                     eligibility_client=adapter, technical_client=adapter, verification_client=adapter,
-                    company_documents_complete=complete, synthetic_test=synthetic)
+                    company_documents_complete=complete, synthetic_test=synthetic , tracker=MLflowTracker())
                 if audit is not None:
                     audit["status"] = "COMPLETED"
                     audit["citation_validation"] = "PASS_ORIGINAL_PIPELINE"
