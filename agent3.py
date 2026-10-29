@@ -255,3 +255,8 @@ async def verify_company(
     output = {"findings": findings, "provenance": provenance, "warnings": warnings}
     validate_verification(output, eligibility, technical, company_documents, reference_date=reference_date)
     return output
+
+# Compatibility aliases for the extracted validation helpers.
+_dates_in_text = dates_in_text
+_offer_duration = offer_duration
+_hours = hours

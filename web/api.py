@@ -40,13 +40,14 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from starlette.concurrency import run_in_threadpool
 from models import Report
 from orchestrator import analyze
+from tracker import get_tracker, safe_log
 from pdf_reader import read_pdf
 from validation import validate_shape, validate_report
 
 app = FastAPI(title="TenderProof AI", version="0.1.0", description="Local web adapter; existing Agents and Validation are unchanged.")
 MAX_FILE = 20 * 1024 * 1024
 MAX_TOTAL = 50 * 1024 * 1024
-DEMO_ROOT = Path(os.getenv("TENDERPROOF_DEMO_DIR", str(ROOT / "runtime" / "demo"))).resolve()
+DEMO_ROOT = Path(os.getenv("TENDERPROOF_DEMO_DIR", str(ROOT / "demo"))).resolve()
 analysis_lock = asyncio.Lock()
 
 AI_OUTPUT_LIMIT = 16384
@@ -64,7 +65,7 @@ def ai_readiness():
         return {"code": "KEY_MISSING", "message": "مفتاح OpenAI غير موجود داخل عملية API. أضفه محليًا إلى .env، أو مرره كـDocker secret حسب README، ثم أعد تشغيل API."}
     if os.getenv("OPENAI_MODEL", "gpt-6-luna") != "gpt-6-luna":
         return {"code": "MODEL_UNSUPPORTED", "message": "إعداد الأمان الحالي يسمح بـgpt-6-luna فقط. اضبط OPENAI_MODEL=gpt-6-luna وأعد تشغيل API."}
-    if os.getenv("TENDERPROOF_SINGLE_AI_RUN", "0") == "1" and AI_SINGLE_LOCK.exists():
+    if os.getenv("TENDERPROOF_SINGLE_AI_RUN", "1") == "1" and AI_SINGLE_LOCK.exists():
         return {"code": "ATTEMPT_USED", "message": "محاولة Real AI الواحدة المصرح بها مستخدمة بالفعل. القفل محفوظ؛ لا تحذفه. أي جلسة جديدة تحتاج تفعيلًا صريحًا ومساحة runtime مستقلة حسب README."}
     return {"code": "READY", "message": "إعدادات Real AI جاهزة، مع ضرورة الموافقة على كل تشغيل. صلاحية المفتاح والرصيد لم يتم اختبارهما عبر OpenAI."}
 
@@ -179,7 +180,7 @@ async def execute(tender, companies, reference_date, mode, complete, synthetic):
     audit = None
     if mode == "AI":
         AI_AUDIT_ROOT.mkdir(parents=True, exist_ok=True)
-        if os.getenv("TENDERPROOF_SINGLE_AI_RUN", "0") == "1":
+        if os.getenv("TENDERPROOF_SINGLE_AI_RUN", "1") == "1":
             try:
                 with AI_SINGLE_LOCK.open("x", encoding="utf-8") as lock:
                     lock.write(request_id)
@@ -295,6 +296,7 @@ def saved_demo(case: str):
     paths = {p.name: p for p in [tender, *companies]}
     documents = [read_pdf(paths[m["filename"]], document_id=m["document_id"], role=m["role"]) for m in report["documents"]]
     validate_report(report, documents)
+    safe_log(get_tracker(), "saved_demo_validation", "SAVED_DEMO", {}, {"validation_passed": 1, "findings": len(report["findings"])})
     return {"report": report, "execution": {"kind": "SAVED_DEMO", "is_new_analysis": False,
         "synthetic_test": True, "case": case, "label": item["label"], "elapsed_seconds": None}}
 

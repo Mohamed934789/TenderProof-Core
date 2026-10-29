@@ -120,3 +120,5 @@ def technical_output_schema():
         ],
         "additionalProperties": False,
     }
+# Compatibility with the stable SDK and its tests.
+agent2_output_schema = technical_output_schema

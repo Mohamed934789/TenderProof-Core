@@ -1,8 +1,8 @@
 {
-  "product": "TenderProof AI Final",
+  "product": "TenderProof AI Integrated Samsung Release",
   "source_core_commit": "186dbeb",
   "source_web_branch": "feature/web-app",
-  "web_worktree_changes_committed": false,
+  "web_worktree_changes_committed": true,
   "ui_url": "http://127.0.0.1:8503",
   "api_url": "http://127.0.0.1:8002",
   "default_mode": "Saved Demo / MOCK; paid AI disabled",
@@ -13,13 +13,18 @@
   "files": [
     {
       "path": ".dockerignore",
-      "bytes": 411,
-      "sha256": "83533f8ddb94a83f9d012f93c7196382b013520306c8867f8b031a13630f77ee"
+      "bytes": 501,
+      "sha256": "2c7301d9c44de354e2be47767f3264cae32a1ebe1dd72500c98ac95e6a21d7df"
+    },
+    {
+      "path": ".env.example",
+      "bytes": 478,
+      "sha256": "740dd7a75de379f72809a6142f50d81ff90b3c3d8796c299ab951604dec11ab9"
     },
     {
       "path": ".gitignore",
-      "bytes": 782,
-      "sha256": "1088ceafcc99d989498a02dbf19bef79d95a2c2dd62110875e02757da2f5b8d3"
+      "bytes": 807,
+      "sha256": "0fdb9ab1ca18ff6fe8e59ea758f78e69e00779a039ee3769e47172ad20e366ce"
     },
     {
       "path": ".streamlit/config.toml",
@@ -27,24 +32,79 @@
       "sha256": "306815eb458abdafb574b60dc22f3d69584e0dce1219a11398847a75f7a4acc0"
     },
     {
+      "path": "Dockerfile",
+      "bytes": 1172,
+      "sha256": "7147d8c116636c45e441eaff7171915e1eb0498e2394d263d25b2e15c134c27c"
+    },
+    {
+      "path": "PDF_READER_NOTES.md",
+      "bytes": 811,
+      "sha256": "f1a3750cb4fb08a49fc3c6feccf5d2f81778e3ca132b8ce1d4dcc316f1fb7a66"
+    },
+    {
+      "path": "README.md",
+      "bytes": 20256,
+      "sha256": "b7f5b77eead2764eef150c8ffffdb1632fa661596ed90cc3d0a1b26bf17ec503"
+    },
+    {
+      "path": "START_REAL_AI.bat",
+      "bytes": 167,
+      "sha256": "36baaf83bebe0c0ada391fe70e4dfcbad83ea088560d6ac5c735c957a6d60880"
+    },
+    {
+      "path": "START_TENDERPROOF.bat",
+      "bytes": 4579,
+      "sha256": "2d32e65ef5210dbf7225030f15d99e87c4071c12dda1461ccbfaac0b8d3eb97b"
+    },
+    {
+      "path": "STOP_TENDERPROOF.bat",
+      "bytes": 1208,
+      "sha256": "adf31ea489f343eec91875091185d9f4343830591024ef1fc9536392c2022441"
+    },
+    {
+      "path": "TEAM_TASKS.md",
+      "bytes": 6596,
+      "sha256": "a1991749e65a198c49666f600dafd06f798210a48a19a2cc4b9dfc79b91332ac"
+    },
+    {
       "path": "agent1.py",
-      "bytes": 5399,
-      "sha256": "5520eb7e36311190f1c90d8137db35a3f337cb189e0449504632f74006f0b7c2"
+      "bytes": 4492,
+      "sha256": "384727c32b25a03827610f75ebe4f922e42742008c48bed5e4e8c747c101a62c"
+    },
+    {
+      "path": "agent1_schema.py",
+      "bytes": 983,
+      "sha256": "0f2e1fa02171170e4e33083364629ecee0a6e304ae3887c1421ddc83b995af42"
     },
     {
       "path": "agent2.py",
-      "bytes": 14995,
-      "sha256": "fddaf1076ecc23556fff1ea08962cdf40c7304f07ad7141360973ae40c3fd368"
+      "bytes": 15028,
+      "sha256": "fe5086b09dea78e438078823c680b57ca46f78a1e01e66c10e82a8e4834168b4"
     },
     {
       "path": "agent2_schema.py",
-      "bytes": 3729,
-      "sha256": "d3861fc64fda5e7d91552f5e6870432fbe7107f4f30fffa8a80a65f8d88bbdd2"
+      "bytes": 3492,
+      "sha256": "4ba1b3dec06d654f44fb24f966794f6d48fd9a3719c40605f970a543afc28155"
     },
     {
       "path": "agent3.py",
-      "bytes": 19804,
-      "sha256": "cbc124b21f89d3df74b6b7fb6fb891e6953e094f8bb692ec89a75da02e92b81e"
+      "bytes": 16191,
+      "sha256": "057bb1224629b8a0c9cb5e6549c7bba38457954d07a5531fb15cbc36cc5c273f"
+    },
+    {
+      "path": "agent3_schema.py",
+      "bytes": 937,
+      "sha256": "971579d790b3167d5fb47a650bbf9b4da84436b889c07270f0a7f05ccabd18ea"
+    },
+    {
+      "path": "arabic_utils.py",
+      "bytes": 2900,
+      "sha256": "9c16d44831a924ea3222d3179ad0d24874966f801d4c156fd106b58b7f78e7e5"
+    },
+    {
+      "path": "common_schema.py",
+      "bytes": 231,
+      "sha256": "c8c8e009a887b342ac413e8b1b6fc8c5967191c9e54ddb59872986c94dd60e02"
     },
     {
       "path": "demo/case_101/01_company_profile.pdf",
@@ -198,13 +258,23 @@
     },
     {
       "path": "docker-compose.yml",
-      "bytes": 1662,
-      "sha256": "233c70ac39b19a7c1e237f491501dcd5ff28967989c5519cfc10d02ccad51975"
+      "bytes": 2152,
+      "sha256": "564448fc8a05f7943b8cb494538eca409247ad69e01e586dc816f34c4fefe792"
     },
     {
-      "path": "Dockerfile",
-      "bytes": 977,
-      "sha256": "0926b8b3ce583d23e40827ee67cd2f7721caf71d7f9fd763b184b3cc6bcdb7d9"
+      "path": "docs/DEMO_REHEARSAL.md",
+      "bytes": 12995,
+      "sha256": "3e861a96a941e61736607b1af46f96dd2af7104ac661c1f3108760812a84bc0b"
+    },
+    {
+      "path": "docs/INTEGRATION_VERIFICATION.md",
+      "bytes": 6066,
+      "sha256": "dba1e48c5af20bea5609ccfd1c5f52df77186ec4475c5e29d1f047e1df896b68"
+    },
+    {
+      "path": "docs/TENDERPROOF_BENCHMARK_FINAL_REPORT.md",
+      "bytes": 5276,
+      "sha256": "f4aea718f0103c4c2ec21a54c30d73012333adac5fa093377718d2ed9186be33"
     },
     {
       "path": "docs/benchmark/case_101-R02.json",
@@ -225,11 +295,6 @@
       "path": "docs/benchmark/provider-failure-diagnosis.json",
       "bytes": 487,
       "sha256": "194a7263e4b1f7301fc2b3e4cacecced3bdbfe85cfb4431c4632cff38cd6e47e"
-    },
-    {
-      "path": "docs/DEMO_REHEARSAL.md",
-      "bytes": 12995,
-      "sha256": "3e861a96a941e61736607b1af46f96dd2af7104ac661c1f3108760812a84bc0b"
     },
     {
       "path": "docs/evidence/case_101-final-evidence.png",
@@ -282,64 +347,134 @@
       "sha256": "6033adf8bf9702f877962756e016b8e4f648aa3b3ea4312d2f07a2d418df328e"
     },
     {
-      "path": "docs/TENDERPROOF_BENCHMARK_FINAL_REPORT.md",
-      "bytes": 5276,
-      "sha256": "f4aea718f0103c4c2ec21a54c30d73012333adac5fa093377718d2ed9186be33"
-    },
-    {
       "path": "llm_client.py",
       "bytes": 814,
       "sha256": "1c7822d1d9cc91a1b3058d76f39892588062856fed4ae55b66387e5f94bfda41"
     },
     {
       "path": "models.py",
-      "bytes": 3969,
-      "sha256": "2c101cae2f96889af23770eecdfc5991345dda645448a47a62cfc23e11b45353"
+      "bytes": 4319,
+      "sha256": "f5fbf1f032567ee9a2bc9d7dc9a7dca5897729e8380851641f32b73f93305250"
     },
     {
       "path": "openai_adapter.py",
-      "bytes": 1681,
-      "sha256": "a8735a247f0955cd0ba76f5ddafc0e6a617a05ff4c3b8e770208145b8e09555d"
+      "bytes": 1679,
+      "sha256": "f8e29c6b4a655ec4c2a77250208a8681e1db8c9adf5bc0651fde09e3786adf36"
     },
     {
       "path": "orchestrator.py",
-      "bytes": 6915,
-      "sha256": "381ec085a4be0cd08a657e061133b7b574d3b89ee2d53e5a1b3126e2935845e5"
+      "bytes": 8128,
+      "sha256": "feaa8e523c5f73936959df4d5df49f2fbafdbad17bceb33d1b0efffdcac73575"
     },
     {
       "path": "pdf_reader.py",
-      "bytes": 9091,
-      "sha256": "80c4349b9f2e47920589b75e26206f440e629c6a2e7bdf20801ad2c2f9a8a969"
-    },
-    {
-      "path": "README.md",
-      "bytes": 13639,
-      "sha256": "eba374971ed26900a99712065b0cc0c11c1622ff6908f4041f6b635d8e738df5"
+      "bytes": 6105,
+      "sha256": "19f507297845c0ab64b2ebc39af8229acdca45ddcf56335f34d5451286f9b6c5"
     },
     {
       "path": "requirements.txt",
-      "bytes": 374,
-      "sha256": "1a6b6712e1bcf27ad661109dbd9ceb5e0db682533ccfcacbf3f694314445947b"
+      "bytes": 518,
+      "sha256": "b52b01ad3310b334e4ee22ba4f12cf1a872318506d2e70aaa5540518562c5c1d"
     },
     {
-      "path": "START_REAL_AI.bat",
-      "bytes": 167,
-      "sha256": "36baaf83bebe0c0ada391fe70e4dfcbad83ea088560d6ac5c735c957a6d60880"
+      "path": "scripts/check_environment.py",
+      "bytes": 2491,
+      "sha256": "8a2da56b0cb8abfb0ae931161218dcd1cf3bbe11c36dbed43e077bba9f7cb8d7"
     },
     {
-      "path": "START_TENDERPROOF.bat",
-      "bytes": 4579,
-      "sha256": "2d32e65ef5210dbf7225030f15d99e87c4071c12dda1461ccbfaac0b8d3eb97b"
+      "path": "tests/README.md",
+      "bytes": 884,
+      "sha256": "2079fba8f98cc2d716075c61f14dee3fb8f8bd9dbe80ba57b8a813e5738db7ea"
     },
     {
-      "path": "STOP_TENDERPROOF.bat",
-      "bytes": 1208,
-      "sha256": "adf31ea489f343eec91875091185d9f4343830591024ef1fc9536392c2022441"
+      "path": "tests/fixtures/01_company_profile.pdf",
+      "bytes": 96661,
+      "sha256": "b94241b56e49b4006d120a7b446d322c4d1c12403b107d690f1af9c97377ca55"
+    },
+    {
+      "path": "tests/fixtures/04_previous_work.pdf",
+      "bytes": 107807,
+      "sha256": "431ba2d41138616ba7fea87cd8b982f25038f2e0d4d09aa0b70ecfd2cacb8356"
+    },
+    {
+      "path": "tests/fixtures/04_previous_work_output.json",
+      "bytes": 6627,
+      "sha256": "4b3ecf88ec518fd4cc6555b1ffa538744ce3626a6b10e9a80af0e57eea05a9d7"
+    },
+    {
+      "path": "tests/fixtures/arabic_table.pdf",
+      "bytes": 39714,
+      "sha256": "2d4a8ff7d39d603df4c25c30cac1e6f6f6c52baa6f7774e2370cbc119e3af991"
+    },
+    {
+      "path": "tests/fixtures/scanned_test.pdf",
+      "bytes": 9127,
+      "sha256": "e7c4f8f4b13e57e7d2c782e1a3a214cae8a8d92bbc0df6c86d506a9988470a14"
+    },
+    {
+      "path": "tests/test_agent1.py",
+      "bytes": 7919,
+      "sha256": "3a7771d563cfb7ad218fd088027b62c7bed142c0566b43a9ab5ed32357bfeeeb"
+    },
+    {
+      "path": "tests/test_agent2.py",
+      "bytes": 12042,
+      "sha256": "f6800dc7aa9ab26bb1fcc47e444ad251724ad7b78cf4e6bcd5fe9ae4523a95f4"
+    },
+    {
+      "path": "tests/test_agent2_integration.py",
+      "bytes": 6705,
+      "sha256": "f52b5ba0c376aa116f418c6ed34c4667f62c9d890fcf935974b0b527ae55feca"
+    },
+    {
+      "path": "tests/test_agent3.py",
+      "bytes": 20062,
+      "sha256": "e61438cd0dc11619eaff6128dcac6147f4fa9eebea58d6ae108ea8432f30a392"
+    },
+    {
+      "path": "tests/test_openai_adapter.py",
+      "bytes": 2869,
+      "sha256": "4c5cdd58303ae23ce5534f67e1ee4f752dcf391f468a6a1960a7ac2b6fb06d17"
+    },
+    {
+      "path": "tests/test_orchestrator.py",
+      "bytes": 12046,
+      "sha256": "eef9a1c656617c264774ae9196ed3c0f1bdb46925ec906228ae1ab10c07591b5"
+    },
+    {
+      "path": "tests/test_pdf_reader.py",
+      "bytes": 11616,
+      "sha256": "3d7d70d721793ee360b42e276eb972b4335a8bb1716cfbd6d5876d123afe52a9"
+    },
+    {
+      "path": "tests/test_pdf_reader_arabic.py",
+      "bytes": 10454,
+      "sha256": "c901e861990b841a33e783d3fabf0659bfd8e2d444cca7eb2985e7d404ce1dac"
+    },
+    {
+      "path": "tests/test_pipeline.py",
+      "bytes": 18296,
+      "sha256": "d03182351555e74ff2f552fb0967233db2db64fb86fc113389554213231cba0b"
+    },
+    {
+      "path": "tests/test_tracking_web.py",
+      "bytes": 7401,
+      "sha256": "eeb8d210954a1edb6f4ef5c56d0275df7754511dc24559491bb9ba8ce33e934b"
+    },
+    {
+      "path": "tests/test_validation.py",
+      "bytes": 5891,
+      "sha256": "321e76d3f51425dc5ec8cb6a93bdfe6c2a73731de78f22ce81d2c7ee4e067ba6"
+    },
+    {
+      "path": "tracker.py",
+      "bytes": 3158,
+      "sha256": "3ca502156a192d2f119a85ed02c0daf0d730a7e9e7fc2fe3635115a6693923b6"
     },
     {
       "path": "validation.py",
-      "bytes": 22933,
-      "sha256": "6e6eff96ea75ef8e1ab4832a60f92d2f13f151bc26c4568727c6dd2b09646382"
+      "bytes": 25335,
+      "sha256": "cf45bb4aaffb70c0fe02fc3355b67b02e5487beb4d2fd053922a698c79130761"
     },
     {
       "path": "web/.env.example",
@@ -348,13 +483,13 @@
     },
     {
       "path": "web/api.py",
-      "bytes": 17264,
-      "sha256": "bb56a3582b5a9cae3bcf51750364652d72e010d5f51c7dc32b5350140a9fcd11"
+      "bytes": 17430,
+      "sha256": "ea455f4e99d453de4cfb22ef2db30b51263d1c4f028c89820d702f8993ecc6f9"
     },
     {
       "path": "web/app.py",
-      "bytes": 22964,
-      "sha256": "c1e98035dc2992f4fec11d24b1827a3891e8d03b52a901b44f81a96b0f6bbce1"
+      "bytes": 23343,
+      "sha256": "ddc8e572c9497937df7862f589a8fffae949749cbabab22c124f3007a947ef9f"
     },
     {
       "path": "web/requirements.txt",
@@ -369,5 +504,10 @@
   ],
   "ux_review": "Passed Desktop/Mobile functional checks; saved provenance remains visible, input panel clarified, completeness warning explicit. External ZIP not refreshed.",
   "git_release_branch": "release/tenderproof-final",
-  "git_base_commit": "186dbeb35b80e2beb84b1f7ba1281d5a45a88284"
+  "git_base_commit": "186dbeb35b80e2beb84b1f7ba1281d5a45a88284",
+  "source_main_commit": "311b19e01437b63484620f38f5b33d7200c61ce9",
+  "source_tracking_commit": "5609b42",
+  "integration_branch": "integration/samsung-final",
+  "stable_backup_commit": "194c472",
+  "paid_calls_during_integration": 0
 }

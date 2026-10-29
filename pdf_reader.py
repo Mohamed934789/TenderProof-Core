@@ -152,3 +152,6 @@ def read_pdf(
         raise
     except Exception as exc:
         raise ValueError(f"Could not read PDF: {path.name}") from exc
+
+# Compatibility alias for the extracted Arabic helper.
+from arabic_utils import recover_arabic_run as _recover_arabic_run

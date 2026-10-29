@@ -4,11 +4,13 @@
 # OCR and table reconstruction are not implemented.
 # unittest is included with Python.
 
-pypdf
-openai
-python-dotenv
+pypdf==6.21.3
+openai==3.39.0
+python-dotenv==1.2.4
 
 # Existing tests use pytest, async fixtures and image-only PDF fixtures.
-pytest
-pytest-asyncio
-Pillow
+pytest==9.1.1
+pytest-asyncio==1.4.1
+Pillow==13.0.0
+# Optional tracking is disabled by default; this installs its local UI and SDK.
+mlflow==3.17.2

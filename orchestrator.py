@@ -3,6 +3,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from time import perf_counter
+from tracker import get_tracker, safe_log
 from datetime import date
 from pathlib import Path
 from llm_client import LLMClient
@@ -27,12 +29,15 @@ async def analyze(
     mode: Mode = "MOCK",
     company_documents_complete: bool = False,
     synthetic_test: bool = False,
+    tracker=None,
 ) -> Report:
     """Read documents -> A1 + A2 -> validate_extractions -> A3 -> validate -> report.
     A1/A2 may run concurrently; A3 must await BOTH valid outputs.
     Valid NOT_FOUND is not an Agent 2 failure. Failed stages must not publish success.
     Completeness stays UNKNOWN unless explicitly established by a documented input.
     """
+    tracker = tracker if tracker is not None else get_tracker()
+    started = perf_counter()
     date.fromisoformat(reference_date)
     if mode not in {"MOCK", "AI"}:
         raise ValueError(f"Unsupported mode: {mode}")
@@ -66,21 +71,26 @@ async def analyze(
         company_documents.append(company)
 
 
+    stage_started = perf_counter()
     eligibility = await extract_eligibility(
         tender,
         client=eligibility_client,
         mode=mode,
     )
 
+    safe_log(tracker, "agent1", mode, eligibility["provenance"], {"elapsed_seconds": perf_counter()-stage_started, "requirements": len(eligibility["requirements"])})
+    stage_started = perf_counter()
     technical = await extract_technical(
         tender,
         client=technical_client,
         mode=mode,
     )
 
+    safe_log(tracker, "agent2", mode, technical["provenance"], {"elapsed_seconds": perf_counter()-stage_started, "requirements": len(technical["technical_requirements"]), "boq_items": len(technical["boq_items"])})
     validate_extractions(eligibility, technical, tender)
 
 
+    stage_started = perf_counter()
     verification = await verify_company(
         eligibility,
         technical,
@@ -141,6 +151,12 @@ async def analyze(
     }
 
     validate_report(report, all_documents)
+    safe_log(tracker, "agent3", mode, verification["provenance"], {
+        "elapsed_seconds": perf_counter()-stage_started, "findings": len(report["findings"]),
+        **{status: sum(f["status"] == status for f in report["findings"]) for status in
+           ("SATISFIED", "CONTRADICTED", "MISSING_EVIDENCE", "NEEDS_REVIEW")}})
+    safe_log(tracker, "validation", mode, {}, {"validation_passed": 1,
+        "documents": len(all_documents), "elapsed_seconds": perf_counter()-started})
     
     return report
 

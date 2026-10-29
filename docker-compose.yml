@@ -11,6 +11,7 @@ services:
       TENDERPROOF_ALLOW_PAID_API: "0"
       TENDERPROOF_SINGLE_AI_RUN: "1"
       OPENAI_MODEL: gpt-6-luna
+      TENDERPROOF_MLFLOW_ENABLED: ${TENDERPROOF_MLFLOW_ENABLED:-0}
     volumes:
       - type: bind
         source: ./runtime/docker/api
@@ -50,6 +51,18 @@ services:
       timeout: 6s
       start_period: 30s
       retries: 5
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+  mlflow:
+    profiles: [tracking]
+    image: tenderproof-final:local
+    pull_policy: never
+    command: ["sh", "-c", "mkdir -p /data/mlflow && exec python -m mlflow ui --backend-store-uri sqlite:////data/mlflow/mlflow.db --host 0.0.0.0 --port 5000"]
+    ports:
+      - "127.0.0.1:5001:5000"
+    volumes:
+      - ./runtime/docker/api:/data
     security_opt:
       - no-new-privileges:true
     cap_drop: [ALL]

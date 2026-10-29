@@ -90,3 +90,93 @@ Evidence Verification يطابق النص المستشهد به بصفحته ا�
 نجح فحص Chromium Headless على Desktop وMobile، مع رفع 9 PDFs بوضع MOCK على الحجمين، وعرض Saved Demo للسيناريوهات الثلاثة والفلاتر والأدلة والصفحات وتنزيل JSON مطابق للأصل. الصور قبل وبعد ونتيجة الفحص داخل `runtime/ux-review/`. لم يتغير Core أو API أو CSS أو التقارير، ولم تُجرَ استدعاءات مدفوعة أو اختبارات شاملة أو Commit/Push/Merge.
 
 تعديلات UX الحالية داخل هذا المجلد. أرشيف ZIP السابق خارج المجلد لم يُحدَّث في مراجعة UX؛ يلزم إعادة إنشائه عند تجهيز التسليم التالي.
+
+
+## النسخة الموحدة للتسليم — integration/samsung-final
+
+النسخة دي تحتفظ بـAI Core والـPrompts المعتمدة، FastAPI وStreamlit وDocker وSaved Demo، وتضيف MLflow اختياري لتسجيل مؤشرات التشغيل فقط. التسجيل لا يغيّر التقرير ولا يصنع Ground Truth. تقرير الـBenchmark السابق في `docs/benchmark/` مستقل عن مؤشرات التشغيل الجديدة.
+
+### التشغيل على Windows بدبل كليك
+
+1. ثبّت Git وDocker Desktop، وشغّل Linux Containers.
+2. نزّل أو اعمل Clone للنسخة الحالية من GitHub.
+3. افتح `START_TENDERPROOF.bat`؛ الواجهة على http://127.0.0.1:8503 وFastAPI على http://127.0.0.1:8002/docs.
+4. اختَر Demo Mode ثم case_101 أو case_202 أو case_303 واضغط عرض التقرير المحفوظ. دي نتائج محفوظة بعلامة واضحة، وليست تحليل AI جديدًا.
+5. ملفات الرفع لكل سيناريو داخل `demo/case_XXX`: `requirements_ar.pdf` للكراسة، وكل ملفات `0*.pdf` للشركة في نفس المجلد. استخدم تاريخ 2026-10-31. لا تخلط السيناريوهات.
+6. `STOP_TENDERPROOF.bat` يوقف التطبيق دون حذف ملفات أو أقفال.
+
+### Docker من الطرفية
+
+```powershell
+& "C:\Program Files\Docker\Docker\resources\bin\docker.exe" compose up --build -d --wait
+```
+
+### تشغيل محلي بدون Docker
+
+Python 3.12 أو أحدث؛ من داخل مجلد المشروع في PowerShell:
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r web/requirements.txt
+$env:TENDERPROOF_RUNTIME_DIR="$PWD/runtime"
+$env:TENDERPROOF_DEMO_DIR="$PWD/demo"
+$env:TENDERPROOF_ALLOW_PAID_API="0"
+$env:TENDERPROOF_SINGLE_AI_RUN="1"
+.\.venv\Scripts\python.exe -m uvicorn web.api:app --host 127.0.0.1 --port 8000 --no-access-log
+```
+
+في نافذة تانية من نفس المجلد:
+
+```powershell
+$env:TENDERPROOF_API_URL="http://127.0.0.1:8000"
+.\.venv\Scripts\python.exe -m streamlit run web/app.py --server.address 127.0.0.1 --server.port 8501
+```
+
+### Real AI — تفعيل صريح فقط
+
+التشغيل العادي لا يرسل طلبات مدفوعة. Docker: أنشئ محليًا `.secrets/openai_api_key` واكتب المفتاح في محرر محلي؛ الملف مستبعد من Git وDocker build. افتح `START_REAL_AI.bat` أو:
+
+```powershell
+& "C:\Program Files\Docker\Docker\resources\bin\docker.exe" compose -f docker-compose.yml -f docker-compose.ai.yml up --build -d --wait
+```
+
+محليًا بدون Docker: ضع المفتاح في `.env` محلي غير متتبع، أو استخدم `OPENAI_API_KEY_FILE` لمسار ملف سري. اضبط في نافذة API قبل تشغيله:
+
+```powershell
+$env:TENDERPROOF_ALLOW_PAID_API="1"
+$env:OPENAI_MODEL="gpt-6-luna"
+$env:TENDERPROOF_SINGLE_AI_RUN="1"
+```
+
+اختَر AI في Advanced Settings، وارفع الملفات ووافق على تكلفة التشغيل، ثم اضغط بدء المراجعة مرة واحدة. الحد التقديري المحجوز $0.50، بحد أقصى 3 طلبات توليد، ولا توجد إعادة تلقائية. `synthetic-test` للمستندات الافتراضية فقط وليس افتراضيًا. `/health` يعرض READY أو سبب عدم الجاهزية؛ READY لا يؤكد صلاحية المفتاح أو الرصيد، ولم يتم اختبارهما بطلب مدفوع أثناء التكامل.
+
+قفل المحاولة محفوظ في `runtime/docker/api/real-ai-e2e/single-attempt.lock` في Docker، و`runtime/real-ai-e2e/` محليًا. لا تحذفه ولا تغيّر runtime لإعادة تسليح محاولة مستهلكة. لو ATTEMPT_USED ظاهر، استخدم Saved Demo؛ أي تشغيل إضافي يتطلب موافقة جديدة ومراجعة مسؤول التشغيل. الإيقاف وإعادة التشغيل يحافظان على القفل.
+
+لإغلاق Real AI: افتح START_TENDERPROOF بدون `--real-ai`؛ أو شغّل Compose الأساسي فقط؛ محليًا اضبط `TENDERPROOF_ALLOW_PAID_API=0` وأعد تشغيل API.
+
+### MLflow اختياري ومتكامل
+
+افتراضيًا التسجيل مقفول. لتفعيله مع Docker وفتح صفحة MLflow:
+
+```powershell
+$env:TENDERPROOF_MLFLOW_ENABLED="1"
+& "C:\Program Files\Docker\Docker\resources\bin\docker.exe" compose --profile tracking up --build -d --wait
+```
+
+الواجهة http://127.0.0.1:5001، experiment اسمه `TenderProof_Evaluation`. اختَر **Model training → Runs** لعرض السجلات التشغيلية؛ صفحة GenAI Overview تعرض Traces غير مستخدمة هنا وقد تظهر فارغة. رابط مباشر للتجربة الأولى: http://127.0.0.1:5001/#/experiments/1/runs?workflowType=machine_learning . نفّذ فحص MOCK أو افتح Saved Demo لتظهر Runs؛ لا تحتاج API مدفوعة. الـAgents تسجل أعداد الشروط والـBOQ ومدة التشغيل، ثم نتائج التحقق. Saved Demo يسجل التحقق من تقرير محفوظ بعلامة SAVED_DEMO. لا تُعرض Precision/Recall/F1 بدون مرجع مستقل؛ المؤشرات هنا تشغيلية فقط. لا تُسجَّل مستندات أو اقتباسات أو أسماء ملفات أو مفاتيح أو مخرجات LLM. SQLite محفوظ تحت `runtime/docker/api/mlflow/mlflow.db`؛ فشل MLflow لا يوقف التحليل.
+
+محليًا اضبط `TENDERPROOF_MLFLOW_ENABLED=1` قبل API، ثم:
+
+```powershell
+.\.venv\Scripts\python.exe -m mlflow ui --backend-store-uri "sqlite:///$($PWD.Path.Replace('\','/'))/runtime/mlflow/mlflow.db" --host 127.0.0.1 --port 5001
+```
+
+أوقف التسجيل بـ`TENDERPROOF_MLFLOW_ENABLED=0` وأعد تشغيل API. لا تعرّض MLflow على الإنترنت. عند تفعيل Docker Real AI وMLflow معًا أضف `-f docker-compose.yml -f docker-compose.ai.yml` قبل `--profile tracking`.
+
+### تحقق مجاني
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests -q
+```
+
+الاختبارات تستخدم Fake LLM أو MOCK؛ بعض اختبارات Replay الخاصة اختيارية وتتخطى نفسها لو سجلات API المحلية غير موجودة. لا تشغّل سكربت Agent 2 اليدوي الحقيقي أو وضع AI أثناء الفحص المجاني.
