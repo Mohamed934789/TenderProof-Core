@@ -1,16 +1,3 @@
-# Python 3.12+ project dependencies.
-# Install with: python -m pip install -r requirements.txt
-# pypdf is used for native PDF text extraction.
-# OCR and table reconstruction are not implemented.
-# unittest is included with Python.
-
-pypdf==6.21.3
-openai==3.39.0
-python-dotenv==1.2.4
-
-# Existing tests use pytest, async fixtures and image-only PDF fixtures.
-pytest==9.1.1
-pytest-asyncio==1.4.1
-Pillow==13.0.0
-# Optional tracking is disabled by default; this installs its local UI and SDK.
+-r requirements-core.txt
+# Optional local telemetry server and SDK (retained for existing Docker tracking profile).
 mlflow==3.17.2

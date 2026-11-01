@@ -52,3 +52,7 @@ __pycache__/
 
 mlruns/
 mlartifacts/
+.DS_Store
+Thumbs.db
+venv/
+.ipynb_checkpoints/

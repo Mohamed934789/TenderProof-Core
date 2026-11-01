@@ -130,6 +130,22 @@ def _decide(kind, ident, item, result, documents, reference, line_lookup, synthe
     text = item.get("text", "")
     assessment = result["assessment"]
 
+    # A model's SUPPORTS assessment cannot override an explicit future start.
+    if kind == "ELIGIBILITY" and re.search(r"ترخيص|licen[cs]e", text, re.I):
+        from license_validity import explicit_start
+        labelled, starts = explicit_start(quote)
+        if labelled and starts is None:
+            return review("The explicitly labelled validity start is invalid or ambiguous.", evidence)
+        if starts is not None and starts > reference:
+            return _finding(kind, ident, "CONTRADICTED",
+                            f"License validity starts on {starts.isoformat()}, after {reference.isoformat()}.", evidence)
+        if starts is not None and result["expiry_date"]:
+            try:
+                if date.fromisoformat(result["expiry_date"]) < starts:
+                    return review("The validity interval ends before its explicit start.", evidence)
+            except ValueError:
+                return review("Expiry date could not be parsed.", evidence)
+
     if "تفويض" in text and "تفويض" not in quote:
         return review("No relevant authorization evidence was cited.", evidence)
     required_hours, offered_hours = hours(text), hours(quote)

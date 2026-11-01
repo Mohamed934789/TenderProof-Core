@@ -10,7 +10,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-COPY requirements.txt ./requirements.txt
+COPY requirements.txt requirements-core.txt ./
 COPY web/requirements.txt ./web/requirements.txt
 
 # Build-only package caches contain public dependencies, never app data.

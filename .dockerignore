@@ -27,3 +27,5 @@ web/**
 !common_schema.py
 !arabic_utils.py
 !tracker.py
+
+!requirements-core.txt

@@ -1,0 +1,7 @@
+-r requirements-core.txt
+pytest==9.1.1
+pytest-asyncio==1.4.1
+Pillow==13.0.0
+fastapi==0.162.0
+python-multipart==0.0.32
+httpx==0.28.1

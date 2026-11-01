@@ -365,3 +365,7 @@ No project `LICENSE` file is currently included. Confirm code, fixture, and data
 *Evidence you can inspect. Decisions you can review.*
 
 </div>
+
+## Portfolio reliability update
+
+Explicit future validity starts are checked in Python before accepting a model support assessment. Invalid or conflicting labelled starts remain under review. The core offline CI uses `requirements-dev.txt`; MLflow tests remain optional. Set `TENDERPROOF_RUNTIME_DIR` to any writable private directory on Windows or Linux. `requirements.txt` retains the optional tracking stack for the existing Docker profile. No general eligibility accuracy is claimed.

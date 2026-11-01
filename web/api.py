@@ -30,8 +30,6 @@ if key_file:
 RUNTIME_ROOT = Path(os.getenv("TENDERPROOF_RUNTIME_DIR", str(ROOT / "runtime"))).resolve()
 TEMP_ROOT = RUNTIME_ROOT / "uploads"
 TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-if os.name == "nt" and TEMP_ROOT.resolve().drive.upper() != "D:":
-    raise RuntimeError("Uploaded documents must use a temporary directory on D")
 os.environ["TEMP"] = os.environ["TMP"] = str(TEMP_ROOT)
 tempfile.tempdir = str(TEMP_ROOT)
 logging.getLogger("pypdf").disabled = True
